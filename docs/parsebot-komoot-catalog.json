@@ -1,0 +1,58 @@
+{
+  "id": "0aec9660-5240-47d5-afa3-06745f962627",
+  "slug": "komoot-com-api",
+  "name": "komoot.com API",
+  "description": "Scrapes Komoot to provide access to outdoor route data including GPS coordinates, elevation profiles, trail maps, and route photo galleries. Supports searching routes by location and sport, retrieving detailed route information, browsing regional discovery content, and looking up public user profiles.",
+  "front_facing_description": "Search and explore outdoor routes on Komoot by location and sport type, accessing detailed GPS coordinates, elevation profiles, trail maps, and route photo galleries. Browse curated regional collections and public user profiles to discover hiking, biking, running, and climbing routes worldwide.",
+  "source_url": "https://komoot.com",
+  "is_authenticated": false,
+  "endpoint_count": 5,
+  "price_min": 1,
+  "price_max": 1,
+  "updated_at": "2026-07-23T04:49:10.176522+02:00",
+  "primary_category": "maps_geo",
+  "secondary_categories": [
+    "sports",
+    "travel"
+  ],
+  "endpoint_preview": [
+    {
+      "endpoint_name": "search_routes",
+      "method": "GET",
+      "summary": "Search for outdoor routes by geographic coordinates and sport type. Returns paginated route summaries including distance, duration, elevation gain/loss, difficulty grade, creator info, and rating. The search is centered on a lat/lng point within a configurable radius. Results are ordered by relevance to the location.",
+      "price": 1,
+      "returns_file": false
+    },
+    {
+      "endpoint_name": "get_route_details",
+      "method": "GET",
+      "summary": "Get comprehensive details for a specific route including GPS coordinates with altitude (elevation profile), way types, surfaces, timeline with highlights and tips, and cover images. The coordinates array provides the full trackpoint set for map rendering. Way types and surfaces describe trail composition percentages.",
+      "price": 1,
+      "returns_file": false
+    },
+    {
+      "endpoint_name": "get_route_gallery",
+      "method": "GET",
+      "summary": "Get the image gallery (photos) for a specific route. Returns paginated images from both user tours and highlights along the route. Each image includes a templated URL, geographic location, creation date, and creator info.",
+      "price": 1,
+      "returns_file": false
+    },
+    {
+      "endpoint_name": "get_location_elements",
+      "method": "GET",
+      "summary": "Get regional discovery elements including curated collections, guides, and editorial content for a given location. Results include collection names, intros, sport types, creator info, and summary statistics like tour counts and upvotes.",
+      "price": 1,
+      "returns_file": false
+    },
+    {
+      "endpoint_name": "get_user_profile",
+      "method": "GET",
+      "summary": "Get public user profile information including display name, avatar image URL, account status, and premium membership indicator. Accepts either a username slug or numeric user ID.",
+      "price": 1,
+      "returns_file": false
+    }
+  ],
+  "score": 0.0602803278688525,
+  "relevance": 0.609069318152242,
+  "access_requirements": []
+}

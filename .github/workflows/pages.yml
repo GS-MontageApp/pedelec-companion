@@ -1,0 +1,53 @@
+name: Pedelec Pages
+on:
+  push:
+    branches: [codex/ui-prototyp]
+  pull_request:
+    branches: [codex/ui-prototyp]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm run build
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Mobile Ladebedienung
+        run: |
+          pnpm dev > /tmp/pedelec-vite.log 2>&1 &
+          for i in $(seq 1 30); do curl --fail http://localhost:5173/pedelec-companion/ && break || sleep 1; done
+          TEST_BASE_URL=http://localhost:5173/pedelec-companion/ TEST_BROWSER_CHANNEL=chromium ALLOW_SECURE_TEST=1 pnpm run test:browser
+      - name: Offline, Sicherung und Update
+        run: |
+          pnpm preview --port 4173 > /tmp/pedelec-preview.log 2>&1 &
+          for i in $(seq 1 30); do curl --fail http://localhost:4173/pedelec-companion/ && break || sleep 1; done
+          TEST_PWA_URL=http://localhost:4173/pedelec-companion/ TEST_BROWSER_CHANNEL=chromium pnpm run test:pwa
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/codex/ui-prototyp'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment

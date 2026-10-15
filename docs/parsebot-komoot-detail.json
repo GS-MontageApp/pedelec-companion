@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-10-15",
+  "source": "https://api.parse.bot/marketplace/apis/0aec9660-5240-47d5-afa3-06745f962627",
+  "id": "0aec9660-5240-47d5-afa3-06745f962627",
+  "slug": "komoot-com-api",
+  "canonical_scraper_id": "241b6f4c-0b7a-4a05-a37e-e5bb73799df8",
+  "updated_at": "2026-07-23T04:49:10.176522+02:00",
+  "endpoints": [
+    {
+      "endpoint_name": "get_route_details",
+      "method": "GET",
+      "input_params": {
+        "route_id": {
+          "type": "string",
+          "required": true,
+          "description": "The unique ID of the route (e.g. e1985976155), obtainable from search_routes results",
+          "domain": {
+            "kind": "derived",
+            "generator": {
+              "path": "$.data.items[0].id",
+              "type": "derived",
+              "from_endpoint": "search_routes"
+            }
+          }
+        }
+      },
+      "returns": [
+        "id",
+        "name",
+        "sport",
+        "distance",
+        "duration",
+        "_embedded",
+        "difficulty",
+        "elevation_up",
+        "elevation_down"
+      ],
+      "price": 1
+    }
+  ],
+  "note": "Nur kostenfreie öffentliche Metadaten gelesen. Kein Scraper-Aufruf, keine Abfrage für Tour 3151148876."
+}

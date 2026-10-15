@@ -1,0 +1,5 @@
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import {VitePWA} from 'vite-plugin-pwa';
+export default defineConfig({base:'/pedelec-companion/',build:{rollupOptions:{output:{manualChunks:{database:['dexie'],files:['zod','fast-xml-parser']}}}},plugins:[react(),tailwindcss(),VitePWA({registerType:'prompt',injectRegister:null,includeAssets:['icon.svg','icon-192.png','icon-512.png','apple-touch-icon.png'],manifest:{id:'/pedelec-companion/',name:'Pedelec Companion',short_name:'Pedelec',description:'Dein lokaler Ladeassistent und dein Fahrtenbuch.',lang:'de',start_url:'/pedelec-companion/',scope:'/pedelec-companion/',display:'standalone',background_color:'#f4f5ef',theme_color:'#244b3e',icons:[{src:'icon-192.png',sizes:'192x192',type:'image/png',purpose:'any'},{src:'icon-512.png',sizes:'512x512',type:'image/png',purpose:'any maskable'}]},workbox:{cleanupOutdatedCaches:true,navigateFallback:'index.html',navigateFallbackDenylist:[/\/api\//],globPatterns:['**/*.{js,css,html,svg,png,webmanifest}']}})]});

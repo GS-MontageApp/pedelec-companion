@@ -1,0 +1,51 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {chromium}=require('playwright');
+const {readApp,settled,browserOptions}=require('./browser-data.cjs');
+const url=process.env.TEST_PWA_URL||'http://localhost:4173/pedelec-companion/';
+const btn=(p,name)=>p.getByRole('button',{name,exact:true});
+const gpx='<?xml version="1.0"?><gpx><trk><trkseg><trkpt lat="48" lon="8"><ele>100</ele><time>2026-10-15T10:00:00Z</time></trkpt><trkpt lat="48.001" lon="8"><ele>110</ele><time>2026-10-15T10:01:00Z</time></trkpt></trkseg></trk></gpx>';
+async function digits(p,value){await btn(p,'Eingabe löschen').tap();await settled(p);for(const d of String(value))await btn(p,d).tap();await settled(p);}
+(async()=>{
+ const browser=await chromium.launch(browserOptions());let originalSW;
+ try{
+  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'de-DE',timezoneId:'Europe/Berlin',acceptDownloads:true});
+  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(url);
+  await btn(page,'Ladevorgang starten').waitFor();await page.evaluate(()=>navigator.serviceWorker.ready);await page.reload();await settled(page);await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
+  const manifest=await page.evaluate(async()=>{const u=document.querySelector('link[rel=manifest]').href;return (await fetch(u)).json();});assert.equal(manifest.start_url,'/pedelec-companion/');
+  await btn(page,'Ladevorgang starten').tap();await settled(page);await page.getByLabel('Als Test-Ladevorgang kennzeichnen').check();await digits(page,20);await btn(page,'Laden starten').tap();await settled(page);
+  assert.equal((await readApp(page)).sessions[0].isTest,true);
+  await btn(page,'Beenden').tap();await settled(page);await digits(page,60);await btn(page,'Ladung abschließen').tap();await settled(page);
+  const record=page.locator('.session-record').first();await record.locator('summary').tap();await settled(page);assert.match(await record.innerText(),/TEST · nicht für Prognosen/);
+  await record.getByRole('checkbox',{name:/Test-Ladevorgang/}).tap();await settled(page);assert.equal((await readApp(page)).sessions[0].isTest,false);
+  await btn(page,'Reisen').tap();await settled(page);await btn(page,'Fahrtag hinzufügen').tap();await settled(page);
+  await page.getByLabel('Start-SOC (%)',{exact:true}).fill('80');await page.getByLabel('End-SOC (%)',{exact:true}).fill('30');await page.getByLabel('Notizen',{exact:true}).fill('Camping · Offline-Test');
+  await page.locator('input[name=charge]').check();await btn(page,'Fahrtag speichern').tap();await settled(page);
+  let state=await readApp(page);assert.equal(state.rideDays.length,1);assert.equal(state.tourLinks.length,0,'Fahrtag ohne Komoot gespeichert');assert.equal(state.rideDays[0].sessionIds.length,1);
+  await page.locator('.diary details').first().locator('summary').tap();await settled(page);assert.match(await page.locator('.diary').innerText(),/90 Prozentpunkte Verbrauch/);
+  await btn(page,'Fahrtag bearbeiten / Tour ergänzen').tap();await settled(page);await page.getByLabel('Komoot-Freigabelink (optional)').fill('https://www.komoot.com/tour/3151148876');
+  await page.getByLabel('Lokale GPX-Datei (optional)').setInputFiles({name:'test.gpx',mimeType:'application/gpx+xml',buffer:Buffer.from(gpx)});
+  await page.getByText('Lokale GPX-Auswertung',{exact:true}).waitFor();await page.locator('.ride-editor').getByText('Optionale Bosch-Tagesangaben',{exact:true}).tap();await settled(page);
+  await page.getByLabel('Motoranteil (%)',{exact:true}).fill('60');await page.getByLabel('Fahreranteil (%)',{exact:true}).fill('40');await page.getByLabel('Eco (%)',{exact:true}).fill('100');await btn(page,'Fahrtag speichern').tap();await settled(page);
+  state=await readApp(page);assert.equal(state.tourLinks[0].komootId,'3151148876');assert.ok(state.tourLinks[0].gpx.distanceKm>0.1);assert.equal(state.boschStats[0].motorPercent,60);
+  await context.setOffline(true);await page.reload();await settled(page);await btn(page,'Reisen').tap();await settled(page);assert.ok((await page.locator('.diary').innerText()).includes(new Date(state.rideDays[0].date+'T12:00').toLocaleDateString('de-DE')));assert.deepEqual(await readApp(page),state);await context.setOffline(false);
+  await btn(page,'Einstellungen').tap();await settled(page);const downloadPromise=page.waitForEvent('download');await btn(page,'JSON-Sicherung exportieren').tap();await settled(page);const download=await downloadPromise;const path=await download.path(),backup=fs.readFileSync(path,'utf8'),parsed=JSON.parse(backup);
+  assert.equal(parsed.version,1);assert.equal(parsed.data.rideDays.length,1);assert.equal(parsed.data.tourLinks[0].komootId,'3151148876');
+  const bad=JSON.stringify({...parsed,version:99});await page.getByLabel('JSON-Sicherung importieren').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from(bad)});assert.match(await page.getByRole('alert').innerText(),/Version/);assert.deepEqual(await readApp(page),state);
+  await page.getByLabel('JSON-Sicherung importieren').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(backup)});await page.getByRole('group',{name:'Import bestätigen'}).waitFor();await btn(page,'Import abbrechen').tap();await settled(page);assert.deepEqual(await readApp(page),state);
+  await page.getByLabel('JSON-Sicherung importieren').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(backup)});await btn(page,'Daten ersetzen').tap();await settled(page);await page.getByText('Sicherung vollständig wiederhergestellt.',{exact:true}).waitFor();state=await readApp(page);assert.equal(state.sessions.length,1);assert.equal(state.rideDays.length,1);assert.equal(state.boschStats[0].motorPercent,60);
+  // A byte-different service worker simulates a new deployment. Restore dist afterwards.
+  originalSW=fs.readFileSync('dist/sw.js','utf8');fs.writeFileSync('dist/sw.js',originalSW+'\n// update-regression-'+Date.now());
+  await page.evaluate(async()=>{const registration=await navigator.serviceWorker.getRegistration();await registration.update();});
+  await page.getByText('Neue Version verfügbar.',{exact:true}).waitFor({timeout:20000});
+  const revision=state.revision;await btn(page,'Gespeichert – jetzt aktualisieren').tap();await settled(page);
+  await page.waitForFunction(()=>document.querySelector('.app')?.getAttribute('aria-busy')==='false');
+  await btn(page,'Ladevorgang starten').waitFor();assert.equal((await readApp(page)).revision,revision);
+  await context.setOffline(true);await page.reload();await settled(page);assert.equal((await readApp(page)).rideDays.length,1);await context.setOffline(false);
+  fs.mkdirSync('.test-artifacts',{recursive:true});await btn(page,'Reisen').tap();await settled(page);await page.locator('.diary details').first().locator('summary').tap();await settled(page);await page.screenshot({path:'.test-artifacts/diary-pwa.png',fullPage:true});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.deepEqual(errors,[]);
+  await context.close();
+  const broken=await browser.newContext();await broken.addInitScript(()=>{IDBFactory.prototype.open=function(){throw new DOMException('Gesperrt','SecurityError');};});const failed=await broken.newPage();await failed.goto(url);assert.match(await failed.getByRole('alert').innerText(),/Daten konnten nicht/);await broken.close();
+  console.log('OK: IndexedDB, Testkennzeichnung, Fahrtag ohne/später mit Komoot, GPX, Bosch-Angaben, JSON-Download/Import, Offline-Neustart, PWA-Update und Lesefehler (mobile Simulation)');
+ }finally{if(originalSW!==undefined)fs.writeFileSync('dist/sw.js',originalSW);await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});
