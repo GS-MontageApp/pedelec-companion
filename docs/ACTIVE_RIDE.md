@@ -38,3 +38,7 @@ Die Tagesbilanz verwendet ausschließlich **Start-SOC + gültig zugeordnete Zwis
 Browserprüfungen nutzen isolierte Profile und synthetische Daten. Keine Prüfung auf einem echten Android-Gerät und keine Bestätigung eines konkreten Android-Launcher-Menüs.
 
 Lokaler Prüfstand 16.10.2026: 43 Fach-/Speichertests bestanden; TypeScript und Produktionsbuild bestanden. Ä08-Browserablauf auf allen vier Breiten, F01-Langlisten-/Duplikatprüfung, HTTP-LAN-Ladebedienung und PWA-Update mit aktivem Fahrtag/Messpunkten bestanden. Die Auswahl über den echten Android-Launcher bleibt durch den Tester am Gerät zu prüfen.
+
+CI-Nachprüfung: Der erste Lauf f2f2e55 veröffentlichte erfolgreich, enthielt aber einen fehlgeschlagenen Ä08-Chromium-Touch-Test. Ein 320-Pixel-Ladebildschirm wurde nach dem Ladestart überbreit; Ladeaktionen brechen jetzt bei Bedarf um, die tatsächliche Gerätebreite wird strikt geprüft. Die bisher implizite Shell ließ außerdem den Fehlerstatus in einer tee-Pipeline verloren gehen; explizites bash aktiviert nun pipefail für ehrliche Testberichte. Ein grüner Gesamtstatus allein ist wegen informativer Tests weiterhin kein Nachweis bestandener Fachprüfungen.
+
+Nachkorrektur lokal mit dem CI-Testbrowser Chromium 151 geprüft: Ä08 auf 320/390/412/1280 Pixeln einschließlich strikter Gerätebreite bestanden; Lade- und Abschlussbedienung auf allen drei mobilen Breiten bestanden.

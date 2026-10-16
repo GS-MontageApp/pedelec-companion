@@ -5,6 +5,9 @@ on:
   pull_request:
     branches: [codex/ui-prototyp]
   workflow_dispatch:
+defaults:
+  run:
+    shell: bash
 permissions:
   contents: read
 concurrency:
