@@ -52,13 +52,13 @@ Eigenes SOC-Ziffernfeld: Ganzzahlen 0–100. Zwischenstände erlauben lokale Mes
 
 Sinkende Werte erfordern eine Bestätigung, auch bei Rückdatierung. Auffällige Messungen bleiben für Prognosen gesperrt. Die Historie bleibt chronologisch mit Details, Messzeiten, Endwerten und Setup-Snapshots verfügbar. Unbekannte Endwerte stehen als „Nicht erfasst“.
 
-Testkennzeichnung ist beim Start und nachträglich im aufgeklappten Historieneintrag möglich. Sehr kurze Sitzungen (unter 2 Minuten) und Auffälligkeiten erzeugen lediglich einen Prüfhinweis; nichts wird automatisch gelöscht oder als Test umklassifiziert. `learningMeasurements` in der Prognoseschnittstelle schließt Testläufe und ungeprüfte/auffällige Messungen aus. Die angezeigten 150 Minuten sind weiterhin eine **feste Demo**, keine berechnete Ladeprognose. Keine echte Pushwarnung; insbesondere keine garantierte Benachrichtigung im Hintergrund auf iOS.
+Testkennzeichnung ist beim Start und nachträglich im aufgeklappten Historieneintrag möglich. Sehr kurze Sitzungen (unter 2 Minuten) und Auffälligkeiten erzeugen lediglich einen Prüfhinweis; nichts wird automatisch gelöscht oder als Test umklassifiziert. `learningMeasurements` in der Prognoseschnittstelle schließt Testläufe und ungeprüfte/auffällige Messungen aus. Seit Ä13 ersetzt eine ausdrücklich gekennzeichnete technische beziehungsweise historische Schätzung bis fest 100 % die frühere 150-Minuten-Demo. Unbekannte Setups zeigen ohne passende Historie keine Zahl. Keine echte Pushwarnung; insbesondere keine garantierte Benachrichtigung im Hintergrund auf iOS.
 
 ## Fahrtage, Komoot und GPX
 
 Unter Daten einen Fahrtag mit Datum, Fahrrad, ganzzahligem Start-/End-SOC und optionalen Notizen speichern. Es ist keine Komoot-Tour erforderlich. Nachträglich „Fahrtag bearbeiten / Tour ergänzen“ wählen. Ladepausen können einem passenden Tag zugeordnet werden, wenn Fahrrad, Akkukonfiguration und lokales Datum übereinstimmen. Jede Ladepause gehört höchstens einem Fahrtag. Bei einem Fahrrad-/Datumswechsel die Zuordnung erneut prüfen.
 
-SOC-Tagesbilanz: Start-SOC + bekannte Zwischenladungen − End-SOC. Ausgabe in **Prozentpunkten**, nicht als exakte Wh. Unbekannte, auffällige oder Test-Ladepausen machen die Bilanz ausdrücklich unvollständig. Akkukonfiguration und Nennkapazität werden separat genannt. Die Berechnung setzt die unveränderte Tageskonfiguration voraus. Diese lokale erste Version verwendet die lokale Zeitzone des Geräts; nach Zeitzonenwechsel Tageszuordnungen prüfen.
+SOC-Tagesbilanz: Start-SOC + bekannte Zwischenladungen − End-SOC. Ausgabe kompakt mit **%** (intern SOC-Differenzen), nicht als exakte Wh. Unbekannte, auffällige oder Test-Ladepausen machen die Bilanz ausdrücklich unvollständig. Akkukonfiguration und Nennkapazität werden separat genannt. Die Berechnung setzt die unveränderte Tageskonfiguration voraus. Diese lokale erste Version verwendet die lokale Zeitzone des Geräts; nach Zeitzonenwechsel Tageszuordnungen prüfen.
 
 Komoot-Freigabelinks werden als Verknüpfung gespeichert. Numerische `/tour/`, `/tours/`- und `/t/`-Links, auch mit Sprachpräfix, liefern eine Tour-ID; Test-ID: 3151148876. Opaque `komoot.app`-Kurzlinks bleiben ohne lokal auflösbare ID. Keine automatische Tourdatenübernahme wird behauptet. GPX wird ausschließlich aus einer gewählten lokalen Datei ausgewertet; gespeichert werden nur abgeleitete Werte, keine Original-GPX oder vollständigen GPS-Tracks.
 
@@ -107,3 +107,5 @@ Prüfungen und Android-Testschritte: [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.
 Ä10: [Fahrtage einzeln löschen und vorhandene Fahrtage fortsetzen](docs/RIDE_MANAGEMENT.md). Löschen mit Bestätigung im Fahrtenbuch; Fortsetzen heutiger Einträge unter Reisen mit Datensatzauswahl und aufbewahrtem früherem Abschluss.
 
 Ä11: [Gemeinsamer SOC-Verlauf, automatische Zwischenladungen und Verbrauchsbilanz](docs/SOC_JOURNEY.md). Neue SOC-Eingaben bleiben leer; unklare Zuordnungen und auffällige Anstiege brauchen eine bewusste Bestätigung.
+
+Ä12/Ä13: [Einzelne Ladungen löschen und Prognose bis 100 %](docs/CHARGE_MANAGEMENT.md).

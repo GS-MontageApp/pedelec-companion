@@ -14,7 +14,8 @@
     "test:pwa": "node scripts/test-pwa.cjs",
     "test:active-ride": "node scripts/test-active-ride.cjs",
     "test:ride-management": "node scripts/test-ride-management.cjs",
-    "test:soc-journey": "node scripts/test-soc-journey.cjs"
+    "test:soc-journey": "node scripts/test-soc-journey.cjs",
+    "test:charge-management": "node scripts/test-charge-management.cjs"
   },
   "dependencies": {
     "dexie": "^4.4.6",

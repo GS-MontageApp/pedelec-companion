@@ -111,6 +111,14 @@ jobs:
           TEST_PWA_URL: http://localhost:4173/pedelec-companion/
           TEST_BROWSER_CHANNEL: chromium
         run: pnpm run test:soc-journey 2>&1 | tee .test-artifacts/soc-journey.log
+      - name: Einzelne Ladungen l�schen und Ladeprognose
+        id: chargeManagement
+        if: steps.server.outcome == 'success'
+        continue-on-error: true
+        env:
+          TEST_PWA_URL: http://localhost:4173/pedelec-companion/
+          TEST_BROWSER_CHANNEL: chromium
+        run: pnpm run test:charge-management 2>&1 | tee .test-artifacts/charge-management.log
       - name: Offline, Sicherung und Update
         id: pwa
         if: steps.server.outcome == 'success'
@@ -132,6 +140,7 @@ jobs:
           ACTIVE_RIDE: ${{ steps.activeRide.outcome }}
           RIDE_MANAGEMENT: ${{ steps.rideManagement.outcome }}
           SOC_JOURNEY: ${{ steps.socJourney.outcome }}
+          CHARGE_MANAGEMENT: ${{ steps.chargeManagement.outcome }}
         run: |
           {
             echo '## Teststand – Ergebnisse'
@@ -146,11 +155,12 @@ jobs:
             echo "| Aktiver Fahrtag / SOC | $ACTIVE_RIDE |"
             echo "| Fahrtage löschen / fortsetzen | $RIDE_MANAGEMENT |"
             echo "| Gemeinsamer SOC-Verlauf | $SOC_JOURNEY |"
+            echo "| Ladungen l�schen / Ladeprognose | $CHARGE_MANAGEMENT |"
             echo "| Offline / Sicherung / Update | $PWA |"
             echo 'Tests sind informativ. Nur ein erfolgreicher separater Produktionsbuild darf veröffentlicht werden.'
             echo 'F01: Inline-Bearbeitung korrigiert; Ä04/Ä05 nicht implementiert; Ä08 umgesetzt; Ä09 geplant.'
           } >> "$GITHUB_STEP_SUMMARY"
-          if [[ "$DOMAIN $BUILD $BROWSER $SERVER $CHARGING $PHASE1 $PWA $ACTIVE_RIDE $RIDE_MANAGEMENT $SOC_JOURNEY" == *failure* ]]; then
+          if [[ "$DOMAIN $BUILD $BROWSER $SERVER $CHARGING $PHASE1 $PWA $ACTIVE_RIDE $RIDE_MANAGEMENT $SOC_JOURNEY $CHARGE_MANAGEMENT" == *failure* ]]; then
             echo '::warning::Mindestens eine Prüfung fehlgeschlagen. Testbericht beachten; Teststand kann trotzdem veröffentlicht sein.'
           fi
       - uses: actions/upload-artifact@v4

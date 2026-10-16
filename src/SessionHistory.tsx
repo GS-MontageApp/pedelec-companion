@@ -1,5 +1,7 @@
 import {BatteryCharging,ChevronRight,Clock} from 'lucide-react';
-import type {Session} from './domain';
+import {useEffect,useState} from 'react';
+import type {Session,RideDay} from './domain';
+import ConfirmDialog from './ConfirmDialog';
 import {elapsed} from './domain';
 import {completedSessions,sessionSummary} from './history';
 import {testSuggestion} from './travel';
@@ -8,7 +10,10 @@ const date=(n:number)=>new Date(n).toLocaleDateString('de-DE');
 const time=(n:number)=>new Date(n).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
 const exactTime=(n:number)=>new Date(n).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 
-export default function SessionHistory({sessions,storageOk,onTestChange}:{sessions:Session[];storageOk:boolean;onTestChange:(id:string,isTest:boolean)=>Promise<void>}) {
+export default function SessionHistory({sessions,rideDays,storageOk,onTestChange,onDelete,onEditingChange}:{sessions:Session[];rideDays:RideDay[];storageOk:boolean;onTestChange:(id:string,isTest:boolean)=>Promise<void>;onDelete:(id:string)=>Promise<boolean>;onEditingChange:(editing:boolean)=>void}) {
+  const [removing,setRemoving]=useState<string|null>(null),[error,setError]=useState('');
+  const selected=sessions.find(s=>s.id===removing),linked=rideDays.filter(d=>d.sessionIds.includes(removing??''));
+  useEffect(()=>{onEditingChange(!!removing);return()=>onEditingChange(false);},[removing,onEditingChange]);
   const completed=completedSessions(sessions);
   return <section className="history card completed-history" id="ladehistorie" aria-labelledby="history-title">
     <div className="section-title"><h2 id="history-title">Bisherige Ladevorgänge</h2><span className="count">{completed.length}</span></div>
@@ -26,6 +31,7 @@ export default function SessionHistory({sessions,storageOk,onTestChange}:{sessio
           <span className="session-open">Alle {points.length} Messwerte und Setup ansehen</span>
         </summary>
         <div className="session-details">
+          <button className="secondary full" type="button" onClick={()=>{setRemoving(session.id);setError('');}}>Ladevorgang löschen</button>
           {!session.isTest&&testSuggestion(session)&&<p className="notice">{testSuggestion(session)} Es wird nichts automatisch gelöscht.</p>}
           <label className="unknown-soc"><input type="checkbox" checked={!!session.isTest} onChange={e=>{void onTestChange(session.id,e.target.checked);}}/>Test-Ladevorgang · von Lern-/Prognosedaten ausschließen</label>
           <p className="history-footnote">{session.endSoc!=null?`Bestätigter End-SOC${end?` · Messung vom ${date(end.measuredAt)} um ${exactTime(end.measuredAt)} Uhr`:''}.`:'End-SOC nicht erfasst. Frühere Zwischenstände werden nicht als Endwert übernommen.'}</p>
@@ -38,5 +44,14 @@ export default function SessionHistory({sessions,storageOk,onTestChange}:{sessio
         </div>
       </details>;
     })}
+    {selected&&<ConfirmDialog title="Ladevorgang löschen?" confirmLabel="Ladevorgang endgültig löschen" onClose={()=>setRemoving(null)} onConfirm={async()=>{try{if(await onDelete(selected.id))setRemoving(null);else setError('Löschung konnte nicht gespeichert werden. Bitte erneut versuchen.');}catch(cause){setError(cause instanceof Error?cause.message:'Löschen nicht möglich.');}}}>
+      <p className="subtitle">{date(selected.startedAt)} · {time(selected.startedAt)} – {time(selected.endedAt!)} Uhr{date(selected.startedAt)!==date(selected.endedAt!)?` · Ende ${date(selected.endedAt!)}`:''}</p>
+      <p className="subtitle">{selected.snapshot.bike.manufacturer} · {selected.snapshot.bike.name}<br/>{selected.snapshot.configuration.id} · {selected.snapshot.batteries.map(b=>`${b.nominalWh} Wh`).join(' + ')}<br/>Start-SOC: {sessionSummary(selected).start?`${sessionSummary(selected).start!.soc} %`:'Nicht erfasst'} · End-SOC: {selected.endSoc==null?'Nicht erfasst':`${selected.endSoc} %`}</p>
+      <p className="history-footnote">ID: {selected.id}</p>
+      {!!linked.length&&<p className="notice">Diese Ladung ist einem Fahrtag zugeordnet. Wenn du sie löschst, wird dessen Verbrauch neu berechnet.</p>}
+      {!!linked.length&&<p className="history-footnote">Betroffene Fahrtage: {linked.map(d=>`${d.date} · ${d.id}`).join('; ')}</p>}
+      <p className="subtitle">Nur diese Ladung und ihre Ladezuordnungen werden gelöscht. Fahrtage und manuelle SOC-Messungen bleiben erhalten.</p>
+      {error&&<p role="alert" className="error">{error}</p>}
+    </ConfirmDialog>}
   </section>;
 }

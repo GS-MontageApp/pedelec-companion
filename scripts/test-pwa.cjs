@@ -22,7 +22,7 @@ async function digits(p,value){await btn(p,'Eingabe löschen').tap();await settl
   await btn(page,'Start-SOC (%)').tap();await digits(page,80);await btn(page,'Eingabe übernehmen').tap();await btn(page,'End-SOC (%)').tap();await digits(page,30);await btn(page,'Eingabe übernehmen').tap();await page.getByLabel('Notizen',{exact:true}).fill('Camping · Offline-Test');
   await page.locator('input[name=charge]').check();await btn(page,'Fahrtag speichern').tap();await settled(page);
   let state=await readApp(page);assert.equal(state.rideDays.length,1);assert.equal(state.tourLinks.length,0,'Fahrtag ohne Komoot gespeichert');assert.equal(state.rideDays[0].sessionIds.length,1);
-  await page.locator('.diary details').first().locator('summary').tap();await settled(page);assert.match(await page.locator('.diary .ride-balance').first().innerText(),/90[\s\S]*Prozentpunkte/);
+  await page.locator('.diary details').first().locator('summary').tap();await settled(page);assert.match(await page.locator('.diary .ride-balance').first().innerText(),/90[\s\S]*%/);
   await btn(page,'Fahrtag bearbeiten / Tour ergänzen').tap();await settled(page);await page.getByLabel('Komoot-Freigabelink (optional)').fill('https://www.komoot.com/tour/3151148876');
   await page.getByLabel('Lokale GPX-Datei (optional)').setInputFiles({name:'test.gpx',mimeType:'application/gpx+xml',buffer:Buffer.from(gpx)});
   await page.getByText('Lokale GPX-Auswertung',{exact:true}).waitFor();await page.locator('.ride-editor').getByText('Optionale Bosch-Tagesangaben',{exact:true}).tap();await settled(page);

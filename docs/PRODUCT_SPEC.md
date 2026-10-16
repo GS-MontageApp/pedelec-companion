@@ -33,3 +33,7 @@ Echte Reichweiten-/Routenberechnung, Push, Server, Konten, Synchronisation, Hers
 - Beispielakkus sind separat modelliert; historische Konfigurationen werden nicht überschrieben.
 - Demodaten/-prognosen eindeutig gekennzeichnet.
 - README und erfolgreicher Build.
+
+## Aktueller Ausbau Ä12/Ä13
+
+Die ursprüngliche Demo-Prognose ist durch eine gekennzeichnete Näherung bis fest 100 % ersetzt. Unbekannte Grundlagen führen zu keiner Zahl. Keine Live-SOC-Messung, kein automatisches Ladeende. Einzelne abgeschlossene Ladungen sind nach Bestätigung löschbar. Details und Modellgrenzen: `CHARGE_MANAGEMENT.md`.
