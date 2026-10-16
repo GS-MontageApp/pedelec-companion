@@ -111,7 +111,7 @@ jobs:
           TEST_PWA_URL: http://localhost:4173/pedelec-companion/
           TEST_BROWSER_CHANNEL: chromium
         run: pnpm run test:soc-journey 2>&1 | tee .test-artifacts/soc-journey.log
-      - name: Einzelne Ladungen l�schen und Ladeprognose
+      - name: Einzelne Ladungen löschen und Ladeprognose
         id: chargeManagement
         if: steps.server.outcome == 'success'
         continue-on-error: true
@@ -155,7 +155,7 @@ jobs:
             echo "| Aktiver Fahrtag / SOC | $ACTIVE_RIDE |"
             echo "| Fahrtage löschen / fortsetzen | $RIDE_MANAGEMENT |"
             echo "| Gemeinsamer SOC-Verlauf | $SOC_JOURNEY |"
-            echo "| Ladungen l�schen / Ladeprognose | $CHARGE_MANAGEMENT |"
+            echo "| Ladungen löschen / Ladeprognose | $CHARGE_MANAGEMENT |"
             echo "| Offline / Sicherung / Update | $PWA |"
             echo 'Tests sind informativ. Nur ein erfolgreicher separater Produktionsbuild darf veröffentlicht werden.'
             echo 'F01: Inline-Bearbeitung korrigiert; Ä04/Ä05 nicht implementiert; Ä08 umgesetzt; Ä09 geplant.'
