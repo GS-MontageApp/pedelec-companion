@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useLayoutEffect,useState} from 'react';
 import type {AppState,BoschDayStats,GpxSummary,RideDay,TourLink} from './domain';
 import SocKeypad from './SocKeypad';
 import {validSoc} from './domain';
@@ -6,10 +6,11 @@ import {duplicateRideDays,saveRideDay} from './rideRules';
 import {createId,localFields} from './charging';
 import {analyzeGpx,chargeSuggestions,dayBalance,komootLink} from './travel';
 
-type Props={state:AppState;onSave:(next:AppState)=>Promise<boolean>};
-export default function TravelDiary({state,onSave}:Props){
+type Props={state:AppState;onSave:(next:AppState)=>Promise<boolean>;onEditingChange?:(editing:boolean)=>void};
+export default function TravelDiary({state,onSave,onEditingChange}:Props){
  const [editing,setEditing]=useState<string|null>(null);
  const duplicates=duplicateRideDays(state.rideDays??[]);
+ useLayoutEffect(()=>{onEditingChange?.(editing!==null);return()=>onEditingChange?.(false);},[editing,onEditingChange]);
  const days=[...(state.rideDays??[])].sort((a,b)=>b.date.localeCompare(a.date));
  return <section className="card travel-plan diary" aria-labelledby="diary-title"><div className="section-title"><h2 id="diary-title">Dein Fahrtenbuch</h2><span className="count">{days.length}</span></div><p className="subtitle">Ein Fahrtag. Alle Etappen und Ladepausen zusammen.</p><button className="primary full" onClick={()=>setEditing('new')}>Fahrtag hinzufügen</button>
  {editing&&<RideEditor key={editing} {...{state,onSave}} day={days.find(d=>d.id===editing)} close={()=>setEditing(null)} editExisting={setEditing}/>}

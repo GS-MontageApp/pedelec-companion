@@ -34,13 +34,33 @@ async function digits(p,value){await btn(p,'Eingabe löschen').tap();await settl
   const bad=JSON.stringify({...parsed,version:99});await page.getByLabel('JSON-Sicherung importieren').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from(bad)});assert.match(await page.getByRole('alert').innerText(),/Version/);assert.deepEqual(await readApp(page),state);
   await page.getByLabel('JSON-Sicherung importieren').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(backup)});await page.getByRole('group',{name:'Import bestätigen'}).waitFor();await btn(page,'Import abbrechen').tap();await settled(page);assert.deepEqual(await readApp(page),state);
   await page.getByLabel('JSON-Sicherung importieren').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(backup)});await btn(page,'Daten ersetzen').tap();await settled(page);await page.getByText('Sicherung vollständig wiederhergestellt.',{exact:true}).waitFor();state=await readApp(page);assert.equal(state.sessions.length,1);assert.equal(state.rideDays.length,1);assert.equal(state.boschStats[0].motorPercent,60);
-  // A byte-different service worker simulates a new deployment. Restore dist afterwards.
-  originalSW=fs.readFileSync('dist/sw.js','utf8');fs.writeFileSync('dist/sw.js',originalSW+'\n// update-regression-'+Date.now());
+  // New worker must not reload active charging or open SOC input, including activation by another client.
+  originalSW=fs.readFileSync('dist/sw.js','utf8');
+  await btn(page,'Laden').tap();await btn(page,'Ladevorgang starten').tap();await digits(page,20);await btn(page,'Laden starten').tap();await settled(page);
+  await btn(page,'Zwischenstand').tap();await digits(page,44);
+  fs.writeFileSync('dist/sw.js',originalSW+'\n// update-regression-A-'+Date.now());
   await page.evaluate(async()=>{const registration=await navigator.serviceWorker.getRegistration();await registration.update();});
+  await page.getByText('Neue Version verfügbar.',{exact:true}).waitFor({timeout:20000});
+  assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);
+  assert.equal(await page.locator('output').innerText(),'44%');
+  let navigations=0;const navigation=frame=>{if(frame===page.mainFrame())navigations++;};page.on('framenavigated',navigation);
+  const peer=await context.newPage();await peer.goto(url);await btn(peer,'Zwischenstand').waitFor();
+  const controlled=page.evaluate(()=>new Promise(resolve=>navigator.serviceWorker.addEventListener('controllerchange',()=>resolve(true),{once:true})));
+  await peer.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();r.waiting?.postMessage({type:'SKIP_WAITING'});});
+  await controlled;
+  assert.equal(navigations,0,'Kein Reload durch Update in anderem Tab');assert.equal(await page.locator('output').innerText(),'44%');await peer.close();page.off('framenavigated',navigation);
+  await btn(page,'Schließen').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);
+  await btn(page,'Beenden').tap();await page.getByLabel('Akkustand unbekannt').check();await btn(page,'Ladung abschließen').tap();await settled(page);
+  await btn(page,'Ladevorgang starten').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);await btn(page,'Schließen').tap();
+  await btn(page,'Daten').tap();await page.locator('.diary details').first().locator('summary').tap();await btn(page,'Fahrtag bearbeiten / Tour ergänzen').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);await btn(page,'Abbrechen').tap();
+  state=await readApp(page);
+  // A second deployment is discovered on the next online start without an explicit update() call.
+  fs.writeFileSync('dist/sw.js',originalSW+'\n// update-regression-B-'+Date.now());
+  await page.reload();await settled(page);
   await page.getByText('Neue Version verfügbar.',{exact:true}).waitFor({timeout:20000});
   const revision=state.revision;await btn(page,'Gespeichert – jetzt aktualisieren').tap();await settled(page);
   await page.waitForFunction(()=>document.querySelector('.app')?.getAttribute('aria-busy')==='false');
-  await btn(page,'Ladevorgang starten').waitFor();assert.equal((await readApp(page)).revision,revision);
+  await btn(page,'Ladevorgang starten').waitFor();assert.equal((await readApp(page)).revision,revision);assert.deepEqual(await readApp(page),state);
   await context.setOffline(true);await page.reload();await settled(page);assert.equal((await readApp(page)).rideDays.length,1);await context.setOffline(false);
   fs.mkdirSync('.test-artifacts',{recursive:true});await btn(page,'Daten').tap();await settled(page);await page.locator('.diary details').first().locator('summary').tap();await settled(page);await page.screenshot({path:'.test-artifacts/diary-pwa.png',fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.deepEqual(errors,[]);

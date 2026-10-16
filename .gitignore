@@ -3,3 +3,17 @@ dist/
 .pnpm-store/
 *.tsbuildinfo
 .test-artifacts/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.db
+*.sqlite
+*.sqlite3
+*.gpx
+pedelec-backup-*.json
+backups/
+local-data/

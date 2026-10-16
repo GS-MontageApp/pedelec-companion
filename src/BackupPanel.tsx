@@ -1,9 +1,10 @@
-import {useState,useRef} from 'react';
+import {useState,useRef,useLayoutEffect} from 'react';
 import type {AppState} from './domain';
 import {duplicateRideDays} from './rideRules';
 import {exportBackup,parseBackup} from './backup';
-export default function BackupPanel({state,onSave}:{state:AppState;onSave:(s:AppState,restore?:boolean)=>Promise<boolean>}){
+export default function BackupPanel({state,onSave,onEditingChange}:{state:AppState;onSave:(s:AppState,restore?:boolean)=>Promise<boolean>;onEditingChange?:(editing:boolean)=>void}){
  const [pending,setPending]=useState<AppState|null>(null),[error,setError]=useState(''),[message,setMessage]=useState('');
+ useLayoutEffect(()=>{onEditingChange?.(pending!==null);return()=>onEditingChange?.(false);},[pending,onEditingChange]);
  const readRequest=useRef(0);
  return <section className="card settings-card"><h2>Deine Datensicherung</h2><p className="subtitle">Alle Daten als JSON. Lokal, ohne Upload.</p><button className="primary full" onClick={()=>{try{const blob=new Blob([exportBackup(state)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`pedelec-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);setMessage('Download gestartet. Bitte die Datei im Downloads-Ordner prüfen.');setError('');}catch(e){setError(e instanceof Error?e.message:'Export fehlgeschlagen.');}}}>JSON-Sicherung exportieren</button>
  <label className="select-label">JSON-Sicherung importieren<input type="file" accept=".json,application/json" onChange={async e=>{const file=e.target.files?.[0];if(!file)return;const request=++readRequest.current;setError('');setMessage('');setPending(null);try{if(file.size>10_000_000)throw new Error('Sicherung zu groß (maximal 10 MB).');const parsed=parseBackup(await file.text());if(request===readRequest.current)setPending(parsed);}catch(err){if(request===readRequest.current)setError(err instanceof Error?err.message:'Import fehlgeschlagen.');}finally{e.target.value='';}}}/></label>
