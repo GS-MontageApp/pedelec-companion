@@ -34,6 +34,7 @@ jobs:
         run: |
           pnpm preview --port 4173 > /tmp/pedelec-preview.log 2>&1 &
           for i in $(seq 1 30); do curl --fail http://localhost:4173/pedelec-companion/ && break || sleep 1; done
+          TEST_PWA_URL=http://localhost:4173/pedelec-companion/ TEST_BROWSER_CHANNEL=chromium pnpm run test:phase1
           TEST_PWA_URL=http://localhost:4173/pedelec-companion/ TEST_BROWSER_CHANNEL=chromium pnpm run test:pwa
       - uses: actions/upload-pages-artifact@v3
         with:

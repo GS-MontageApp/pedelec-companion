@@ -10,6 +10,7 @@
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:browser": "node scripts/test-mobile.cjs && node scripts/test-finish.cjs",
     "typecheck": "tsc -b",
+    "test:phase1": "node scripts/test-phase1.cjs",
     "test:pwa": "node scripts/test-pwa.cjs"
   },
   "dependencies": {

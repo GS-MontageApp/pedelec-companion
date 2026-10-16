@@ -1,6 +1,6 @@
 # Pedelec Companion
 
-Deutsche mobile React-/TypeScript-/Vite-App mit Tailwind, Lucide, Dexie/IndexedDB und Offline-PWA. Drei Bereiche: Reisen, Laden, Einstellungen. Kein Backend, keine Konten, keine automatische Hersteller- oder Komoot-Datenabfrage.
+Deutsche mobile React-/TypeScript-/Vite-App mit Tailwind, Lucide, Dexie/IndexedDB und Offline-PWA. Vier Bereiche: Reisen, Laden, Daten, Einstellungen. Kein Backend, keine Konten, keine automatische Hersteller- oder Komoot-Datenabfrage.
 
 ## Lokal starten
 
@@ -54,7 +54,7 @@ Testkennzeichnung ist beim Start und nachträglich im aufgeklappten Historienein
 
 ## Fahrtage, Komoot und GPX
 
-Unter Reisen einen Fahrtag mit Datum, Fahrrad, ganzzahligem Start-/End-SOC und optionalen Notizen speichern. Es ist keine Komoot-Tour erforderlich. Nachträglich „Fahrtag bearbeiten / Tour ergänzen“ wählen. Ladepausen können einem passenden Tag zugeordnet werden, wenn Fahrrad, Akkukonfiguration und lokales Datum übereinstimmen. Jede Ladepause gehört höchstens einem Fahrtag. Bei einem Fahrrad-/Datumswechsel die Zuordnung erneut prüfen.
+Unter Daten einen Fahrtag mit Datum, Fahrrad, ganzzahligem Start-/End-SOC und optionalen Notizen speichern. Es ist keine Komoot-Tour erforderlich. Nachträglich „Fahrtag bearbeiten / Tour ergänzen“ wählen. Ladepausen können einem passenden Tag zugeordnet werden, wenn Fahrrad, Akkukonfiguration und lokales Datum übereinstimmen. Jede Ladepause gehört höchstens einem Fahrtag. Bei einem Fahrrad-/Datumswechsel die Zuordnung erneut prüfen.
 
 SOC-Tagesbilanz: Start-SOC + bekannte Zwischenladungen − End-SOC. Ausgabe in **Prozentpunkten**, nicht als exakte Wh. Unbekannte, auffällige oder Test-Ladepausen machen die Bilanz ausdrücklich unvollständig. Akkukonfiguration und Nennkapazität werden separat genannt. Die Berechnung setzt die unveränderte Tageskonfiguration voraus. Diese lokale erste Version verwendet die lokale Zeitzone des Geräts; nach Zeitzonenwechsel Tageszuordnungen prüfen.
 
@@ -73,6 +73,7 @@ $env:TEST_BASE_URL = 'http://192.168.178.31:5173/pedelec-companion/'
 pnpm run test:browser
 # Produktionsbuild und Preview vorher starten:
 $env:TEST_PWA_URL = 'http://localhost:4173/pedelec-companion/'
+pnpm run test:phase1
 pnpm run test:pwa
 ```
 
@@ -86,3 +87,15 @@ Die PWA-Prüfung verwendet einen frischen Browserkontext, testet Download/Import
 4. Einstellungen → JSON exportieren. Im Android-Downloads-Ordner Datei prüfen. Dieselbe Sicherung auswählen: erst abbrechen, dann erneut auswählen und Wiederherstellung bestätigen. Ungültige JSON-Datei versuchen; vorhandene Daten müssen erhalten bleiben.
 5. App vollständig schließen, Flugmodus aktivieren und erneut über das Startbildschirm-Symbol öffnen. Historie, Fahrtage und neu erfasste Daten müssen lokal verfügbar bleiben. Externe Komoot-Links funktionieren offline naturgemäß nicht.
 6. Nach einem neuen Deployment wieder online gehen. Updatehinweis abwarten bzw. App fokussieren, offene Eingaben speichern und Update bestätigen. Daten und laufende gespeicherte Sitzung müssen erhalten bleiben.
+
+## Entwicklungsphase 1: Fahrtage und Daten
+
+Start- und End-SOC im Fahrtenbuch verwenden denselben grünen Ziffernblock wie Laden. Zulässig sind ausschließlich ganze Zahlen von 0 bis 100, auch bei Testdatensätzen und Importen. Ein Fahrtag ist die kumulierte Tagesaufzeichnung je Fahrrad und lokalem Kalenderdatum. Existiert er bereits, die angebotene Bearbeitung öffnen. Historische Duplikate bleiben sichtbar und werden bis zur Klärung von realen Auswertungen ausgeschlossen; es wird nichts automatisch gelöscht oder zusammengeführt.
+
+Fahrtage lassen sich ausdrücklich als Test markieren. Die Markierung bleibt beim Bearbeiten, Speichern und Sichern erhalten; abhängige GPX-/Bosch-Daten gehören weiterhin zu diesem Fahrtag. Test-Fahrtage werden über die zentrale Auswahl `regularRideDays` aus realen Auswertungen ausgeschlossen. Test-Ladungen zählen nicht zur realen Tagesbilanz.
+
+Optionale Fahrtzeiten grenzen Ladepausen ein. Die Vorschläge zeigen passende abgeschlossene Sitzungen; erst das bewusste Auswählen bestätigt eine Zwischenladung. Ohne Fahrtzeiten muss der Nutzer selbst prüfen, ob sie tatsächlich zwischen den Fahrten lag. Ladungen nach dem letzten Fahrtende werden bei bekannten Zeitgrenzen nicht berücksichtigt. Unbekannte SOC-Endwerte und auffällige Ladungen ergeben keine vollständige Bilanz. Gleiche IDs werden nie doppelt berechnet. Die SOC-Bezugsgröße kann bei Unsicherheit auf „Unbekannt oder abweichend“ gesetzt werden; dann wird keine Tagesbilanz freigegeben.
+
+„Daten in der unteren Navigation anzeigen“ ist standardmäßig aktiv. Ausschalten entfernt nur den Footer-Punkt. Einstellungen → „Daten öffnen · Fahrtenbuch und GPX“ bleibt verfügbar. Alle Daten und die Einstellung bleiben nach Neuladen erhalten. IndexedDB-Schema und JSON-Format bleiben auf Version 1; neue Felder sind optional, alte Sicherungen lesbar. Keine neue Ladezeit- oder umfassende Fahrt-SOC-Plausibilitätslogik (Ä04/Ä05).
+
+Prüfungen und Android-Testschritte: [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.md).

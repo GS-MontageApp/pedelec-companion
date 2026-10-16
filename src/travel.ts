@@ -24,13 +24,11 @@ export function compatibleCharge(day:Pick<RideDay,'date'|'bikeId'|'configuration
   const local=(n:number)=>new Date(n).toLocaleDateString('sv-SE');
   return s.endedAt!==undefined&&s.snapshot.bike.id===day.bikeId&&s.snapshot.configuration.id===day.configuration.id&&[local(s.startedAt),local(s.endedAt)].includes(day.date);
 }
-export function dayBalance(day:RideDay,state:AppState) {
-  let charged=0;const excluded:string[]=[];
-  for(const id of day.sessionIds){const s=state.sessions.find(s=>s.id===id),first=s&&chronological(s.measurements)[0];
-    if(!s||!compatibleCharge(day,s)||s.isTest||s.endSoc==null||!first||s.measurements.some(m=>m.quality?.status==='flagged')||s.endSoc<first.soc){excluded.push(id);continue;}
-    charged+=s.endSoc-first.soc;
-  }
-  return {charged,consumed:day.startSoc+charged-day.endSoc,complete:excluded.length===0,excluded};
+export {dayBalance} from './rideRules.ts';
+export function chargeSuggestions(day:RideDay,state:AppState){
+ return state.sessions.filter(s=>compatibleCharge(day,s)||day.sessionIds.includes(s.id)).map(session=>({session,
+  usedElsewhere:(state.rideDays??[]).some(d=>d.id!==day.id&&d.sessionIds.includes(session.id)),
+  withinRide:day.startedAt!==undefined&&day.endedAt!==undefined&&session.startedAt>=day.startedAt&&session.endedAt!==undefined&&session.endedAt<=day.endedAt}));
 }
 type Point={lat:number;lon:number;ele?:number;time?:number};
 const haversine=(a:Point,b:Point)=>{const r=Math.PI/180,dlat=(b.lat-a.lat)*r,dlon=(b.lon-a.lon)*r;return 6371000*2*Math.asin(Math.min(1,Math.sqrt(Math.sin(dlat/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dlon/2)**2)));};
