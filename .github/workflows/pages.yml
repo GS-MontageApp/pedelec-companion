@@ -95,6 +95,14 @@ jobs:
           TEST_PWA_URL: http://localhost:4173/pedelec-companion/
           TEST_BROWSER_CHANNEL: chromium
         run: pnpm run test:active-ride 2>&1 | tee .test-artifacts/active-ride.log
+      - name: Fahrtage löschen und fortsetzen
+        id: rideManagement
+        if: steps.server.outcome == 'success'
+        continue-on-error: true
+        env:
+          TEST_PWA_URL: http://localhost:4173/pedelec-companion/
+          TEST_BROWSER_CHANNEL: chromium
+        run: pnpm run test:ride-management 2>&1 | tee .test-artifacts/ride-management.log
       - name: Offline, Sicherung und Update
         id: pwa
         if: steps.server.outcome == 'success'
@@ -114,6 +122,7 @@ jobs:
           PHASE1: ${{ steps.phase1.outcome }}
           PWA: ${{ steps.pwa.outcome }}
           ACTIVE_RIDE: ${{ steps.activeRide.outcome }}
+          RIDE_MANAGEMENT: ${{ steps.rideManagement.outcome }}
         run: |
           {
             echo '## Teststand – Ergebnisse'
@@ -126,11 +135,12 @@ jobs:
             echo "| Mobile Ladebedienung | $CHARGING |"
             echo "| Entwicklungsphase 1 | $PHASE1 |"
             echo "| Aktiver Fahrtag / SOC | $ACTIVE_RIDE |"
+            echo "| Fahrtage löschen / fortsetzen | $RIDE_MANAGEMENT |"
             echo "| Offline / Sicherung / Update | $PWA |"
             echo 'Tests sind informativ. Nur ein erfolgreicher separater Produktionsbuild darf veröffentlicht werden.'
             echo 'F01: Inline-Bearbeitung korrigiert; Ä04/Ä05 nicht implementiert; Ä08 umgesetzt; Ä09 geplant.'
           } >> "$GITHUB_STEP_SUMMARY"
-          if [[ "$DOMAIN $BUILD $BROWSER $SERVER $CHARGING $PHASE1 $PWA $ACTIVE_RIDE" == *failure* ]]; then
+          if [[ "$DOMAIN $BUILD $BROWSER $SERVER $CHARGING $PHASE1 $PWA $ACTIVE_RIDE $RIDE_MANAGEMENT" == *failure* ]]; then
             echo '::warning::Mindestens eine Prüfung fehlgeschlagen. Testbericht beachten; Teststand kann trotzdem veröffentlicht sein.'
           fi
       - uses: actions/upload-artifact@v4

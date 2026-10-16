@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import type {AppState} from './domain.ts';
+import {assertRideResumptions,previousEndIds,type AppState} from './domain.ts';
 import {initialState} from './persistence.ts';
 import {compatibleCharge,komootLink} from './travel.ts';
 const id=z.string().min(1).max(200),text=z.string().max(10000),num=z.number().finite(),stamp=num.min(0),soc=num.int().min(0).max(100),pct=num.min(0).max(100);
@@ -12,7 +12,7 @@ const quality=z.object({status:z.enum(['valid','flagged','unreviewed']),issues:z
 const point=z.object({id,soc,measuredAt:stamp,recordedAt:stamp,quality:quality.optional()}).strict();
 const session=z.object({id,startedAt:stamp,endedAt:stamp.optional(),endSoc:soc.nullable().optional(),endMeasurementId:id.optional(),isTest:z.boolean().optional(),snapshot:z.object({bike,configuration:config,batteries:z.array(battery).min(1),charger}).strict(),measurements:z.array(point).min(1)}).strict();
 const gpx=z.object({distanceKm:num.nonnegative(),ascentM:num.nonnegative().optional(),descentM:num.nonnegative().optional(),startedAt:stamp.optional(),endedAt:stamp.optional(),elapsedMs:num.nonnegative().optional(),pauseMs:num.nonnegative(),pauseCount:num.int().nonnegative(),pointCount:num.int().min(2),discardedPoints:num.int().nonnegative(),warnings:z.array(text),algorithm:z.literal('gpx-v1')}).strict();
-const ride=z.object({id,date,bikeId:id,configuration:config,batteries:z.array(battery).min(1),startSoc:soc,endSoc:soc.optional(),status:z.enum(['active','completed']).optional(),socMeasurements:z.array(z.object({id,soc,measuredAt:stamp,recordedAt:stamp,updatedAt:stamp.optional(),kind:z.enum(['start','checkpoint','end']),note:text.optional()}).strict()).optional(),notes:text,sessionIds:z.array(id),isTest:z.boolean().optional(),startedAt:stamp.optional(),endedAt:stamp.optional(),socBasis:z.enum(['combined','unknown']).optional()}).strict();
+const ride=z.object({id,date,bikeId:id,configuration:config,batteries:z.array(battery).min(1),startSoc:soc,endSoc:soc.optional(),status:z.enum(['active','completed']).optional(),socMeasurements:z.array(z.object({id,soc,measuredAt:stamp,recordedAt:stamp,updatedAt:stamp.optional(),kind:z.enum(['start','checkpoint','end']),note:text.optional()}).strict()).optional(),resumptions:z.array(z.object({id,resumedAt:stamp,previousStartSoc:soc,previousStartedAt:stamp.optional(),previousEndSoc:soc.optional(),previousEndedAt:stamp.optional(),previousStatus:z.enum(['active','completed']).optional(),previousEndPointIds:z.array(id)}).strict()).optional(),notes:text,sessionIds:z.array(id),isTest:z.boolean().optional(),startedAt:stamp.optional(),endedAt:stamp.optional(),socBasis:z.enum(['combined','unknown']).optional()}).strict();
 const dataSchema=z.object({activeBikeId:id,chargerId:id,showDataNav:z.boolean().optional(),revision:num.int().nonnegative().optional(),catalog:z.object({bikes:z.array(bike).min(1),batteries:z.array(battery).min(1),chargers:z.array(charger).min(1),configurations:z.array(config).min(1)}).strict(),sessions:z.array(session),rideDays:z.array(ride),tourLinks:z.array(z.object({id,rideDayId:id,url:z.string().optional(),komootId:z.string().regex(/^\d+$/).optional(),gpx:gpx.optional()}).strict()),boschStats:z.array(z.object({id,rideDayId:id,motorPercent:pct.optional(),riderPercent:pct.optional(),averageRiderWatts:num.nonnegative().optional(),modes:z.object({Eco:pct.optional(),Tour:pct.optional(),Sport:pct.optional(),eMTB:pct.optional(),Turbo:pct.optional()}).strict(),loadNotes:text.optional(),source:z.literal('manuell')}).strict())}).strict();
 const schema=z.object({app:z.literal('pedelec-companion'),version:z.literal(1),exportedAt:z.string().datetime(),data:dataSchema}).strict();
 const fail=(message:string):never=>{throw new Error(message);};
@@ -36,12 +36,15 @@ export function validateData(value:unknown):AppState {
   if(d.rideDays.filter(r=>r.status==='active').length>1)fail('Mehrere aktive Fahrtage.');
   const used=new Set<string>();
   for(const day of d.rideDays){
+    assertRideResumptions(day);
     if(day.status==='active'?(day.endSoc!==undefined||day.endedAt!==undefined):day.endSoc===undefined)fail('Ungültiger Abschlusszustand des Fahrtags.');
-    if(day.status&&day.startedAt===undefined||day.status==='completed'&&day.endedAt===undefined)fail('Fahrtag ohne Start-/Endzeit.');
-    const points=day.socMeasurements??[];
+    if(day.status&&day.startedAt===undefined&&!day.resumptions?.length||day.status==='completed'&&day.endedAt===undefined)fail('Fahrtag ohne Start-/Endzeit.');
+    const points=day.socMeasurements??[],archived=previousEndIds(day);
+    unique(day.resumptions??[]);
+    if((day.resumptions??[]).some(r=>new Set(r.previousEndPointIds).size!==r.previousEndPointIds.length||r.previousEndPointIds.some(id=>!points.some(p=>p.id===id&&p.kind==='end'))))fail('Ungültige frühere Abschlussmesspunkte.');
     if(points.some(p=>p.measuredAt<(day.startedAt??0)||day.endedAt!==undefined&&p.measuredAt>day.endedAt||p.updatedAt!==undefined&&p.updatedAt<p.recordedAt))fail('Ungültiger Fahrtag-Messzeitpunkt.');
-    if(day.status&&(points.filter(p=>p.kind==='start').length!==1||points.filter(p=>p.kind==='end').length!==(day.status==='active'?0:1)))fail('Start-/Endmessungen fehlen oder sind doppelt.');
-    for(const p of points)if(p.kind==='start'&&(p.soc!==day.startSoc||p.measuredAt!==day.startedAt)||p.kind==='end'&&(p.soc!==day.endSoc||p.measuredAt!==day.endedAt))fail('Start-/Endmesspunkt passt nicht zum Fahrtag.');
+    if(day.status&&(points.filter(p=>p.kind==='start').length!==(day.startedAt===undefined?0:1)||points.filter(p=>p.kind==='end'&&!archived.has(p.id)).length!==(day.status==='active'?0:1)))fail('Start-/Endmessungen fehlen oder sind doppelt.');
+    for(const p of points)if(p.kind==='start'&&(p.soc!==day.startSoc||p.measuredAt!==day.startedAt)||p.kind==='end'&&!archived.has(p.id)&&(p.soc!==day.endSoc||p.measuredAt!==day.endedAt))fail('Start-/Endmesspunkt passt nicht zum Fahrtag.');
 if([day.startedAt,day.endedAt].some(t=>t!==undefined&&(!day.status||t===day.startedAt)&&new Date(t).toLocaleDateString('sv-SE')!==day.date)||day.startedAt!==undefined&&day.endedAt!==undefined&&day.endedAt<day.startedAt)fail('Ungültige Fahrtzeiten.');if(!c.bikes.some(b=>b.id===day.bikeId)||day.configuration.bikeId!==day.bikeId||!validPack(day.configuration,day.batteries))fail('Ungültiger Fahrtag.');
     for(const id of day.sessionIds){const s=d.sessions.find(s=>s.id===id);if(!s||!compatibleCharge(day,s)||used.has(id))fail('Ladepause ist nicht eindeutig oder passt nicht zum Fahrtag.');used.add(id);}}
   for(const t of d.tourLinks){if(!d.rideDays.some(r=>r.id===t.rideDayId))fail('Tour ohne Fahrtag.');if(t.url){const parsed=komootLink(t.url);if(t.komootId!==parsed.id)fail('Komoot-Link und Tour-ID passen nicht zusammen.');}else if(t.komootId)fail('Komoot-ID ohne Link.');}

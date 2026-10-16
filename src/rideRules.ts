@@ -1,15 +1,17 @@
-import type {AppState,RideDay,Session} from './domain.ts';
+import {assertRideResumptions,previousEndIds,type AppState,type RideDay,type Session} from './domain.ts';
 
 const soc=(n:unknown)=>typeof n==='number'&&Number.isInteger(n)&&n>=0&&n<=100;
 export function assertSocData(state:AppState){
  for(const s of state.sessions)if(s.measurements.some(m=>!soc(m.soc))||(s.endSoc!=null&&!soc(s.endSoc)))throw new Error('Akkustände müssen ganze Zahlen von 0 bis 100 sein.');
  if((state.rideDays??[]).filter(d=>d.status==='active').length>1)throw new Error('Es darf nur ein Fahrtag aktiv sein.');
  for(const day of state.rideDays??[]){
+  assertRideResumptions(day);
   if(!day.status)continue;
-  if(day.startedAt===undefined||day.status==='active'&&(day.endedAt!==undefined||day.endSoc!==undefined)||day.status==='completed'&&(day.endedAt===undefined||day.endSoc===undefined))throw new Error('Start-/Endzustand des Fahrtags ist unvollständig.');
-  const points=day.socMeasurements??[];
-  if(new Set(points.map(p=>p.id)).size!==points.length||points.filter(p=>p.kind==='start').length!==1||points.filter(p=>p.kind==='end').length!==(day.status==='active'?0:1)||points.some(p=>!Number.isFinite(p.measuredAt)||!Number.isFinite(p.recordedAt)||p.measuredAt<day.startedAt!||day.endedAt!==undefined&&p.measuredAt>day.endedAt))throw new Error('Bitte die Messzeitpunkte innerhalb des Fahrtags prüfen.');
-  if(points.some(p=>p.kind==='start'&&(p.soc!==day.startSoc||p.measuredAt!==day.startedAt)||p.kind==='end'&&(p.soc!==day.endSoc||p.measuredAt!==day.endedAt)))throw new Error('Start-/Endmesspunkt passt nicht zum Fahrtag.');
+  if(day.startedAt===undefined&&!day.resumptions?.length||day.status==='active'&&(day.endedAt!==undefined||day.endSoc!==undefined)||day.status==='completed'&&(day.endedAt===undefined||day.endSoc===undefined))throw new Error('Start-/Endzustand des Fahrtags ist unvollständig.');
+  const points=day.socMeasurements??[],archived=previousEndIds(day);
+  if((day.resumptions??[]).some(r=>r.previousEndPointIds.some(id=>!points.some(p=>p.id===id&&p.kind==='end'))))throw new Error('Ein früherer Abschlussmesspunkt fehlt.');
+  if(new Set(points.map(p=>p.id)).size!==points.length||points.filter(p=>p.kind==='start').length!==(day.startedAt===undefined?0:1)||points.filter(p=>p.kind==='end'&&!archived.has(p.id)).length!==(day.status==='active'?0:1)||points.some(p=>!Number.isFinite(p.measuredAt)||!Number.isFinite(p.recordedAt)||p.measuredAt<day.startedAt!||day.endedAt!==undefined&&p.measuredAt>day.endedAt))throw new Error('Bitte die Messzeitpunkte innerhalb des Fahrtags prüfen.');
+  if(points.some(p=>p.kind==='start'&&(p.soc!==day.startSoc||p.measuredAt!==day.startedAt)||p.kind==='end'&&!archived.has(p.id)&&(p.soc!==day.endSoc||p.measuredAt!==day.endedAt)))throw new Error('Start-/Endmesspunkt passt nicht zum Fahrtag.');
  }
  for(const d of state.rideDays??[])if(!soc(d.startSoc)||(d.status==='active'?d.endSoc!==undefined:!soc(d.endSoc))||(d.socMeasurements??[]).some(p=>!soc(p.soc)))throw new Error('Akkustände müssen ganze Zahlen von 0 bis 100 sein.');
 }

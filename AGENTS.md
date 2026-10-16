@@ -42,3 +42,5 @@ Semantische und barrierearme Controls, 44px+ Touch-Ziele, keine horizontalen Scr
 - IndexedDB bei normalen Updates erhalten. Keine automatische Löschung oder Zurücksetzung. Bei notwendigen Schemaänderungen explizite datenerhaltende Dexie-Migrationen mit Wiederherstellungstests verwenden.
 - F01 ist aufgeklärt und behoben: Fahrtag-Editoren müssen direkt im per eindeutiger ID ausgewählten Datensatz erscheinen; lange Listen und vorhandene Duplikate bleiben einzeln bearbeitbar. Ä04 und Ä05 nicht implementieren. Ä08 ist umgesetzt: aktiver Fahrtag und SOC-Messpunkte mit stabilen IDs, persistenter Wiederaufnahme und bewusst zugeordneten Ladepausen. Ä09 bleibt geplant.
 - Ablauf und Betrieb: `docs/DEVELOPMENT_WORKFLOW.md`.
+
+- Ä10: Fahrtage ausschließlich nach bestätigter Auswahl anhand ihrer ID löschen; eigenständige Ladungen erhalten. Vorhandene heutige Fahrtage nach ausdrücklicher Auswahl und Bestätigung fortsetzen; frühere Abschlüsse vollständig im Fortsetzungsverlauf bewahren. Keine automatische Zusammenführung. Siehe `docs/RIDE_MANAGEMENT.md`.

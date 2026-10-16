@@ -53,8 +53,10 @@ async function digits(p,value){await btn(p,'Eingabe löschen').tap();await settl
   await btn(page,'Beenden').tap();await page.getByLabel('Akkustand unbekannt').check();await btn(page,'Ladung abschließen').tap();await settled(page);
   await btn(page,'Ladevorgang starten').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);await btn(page,'Schließen').tap();
   // Update preserves an active ride and its new nested SOC points, including editing protection.
-  await btn(page,'Reisen').tap();await btn(page,'Fahrtag starten').tap();await page.getByRole('dialog').getByLabel('Fahrrad',{exact:true}).selectOption('yamaha');await digits(page,52);await btn(page.getByRole('dialog'),'Speichern').tap();await settled(page);await page.getByRole('dialog').waitFor({state:'hidden'});
+  await btn(page,'Reisen').tap();await page.getByLabel('Fahrrad für den Fahrtag',{exact:true}).selectOption('yamaha');await btn(page,'Fahrtag starten').tap();await digits(page,52);await btn(page.getByRole('dialog'),'Speichern').tap();await settled(page);await page.getByRole('dialog').waitFor({state:'hidden'});
   await btn(page,'Akkustand erfassen').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);await digits(page,48);await btn(page.getByRole('dialog'),'Speichern').tap();await settled(page);await page.getByRole('dialog').waitFor({state:'hidden'});
+  await btn(page,'Fahrtag beenden').tap();await digits(page,47);await btn(page.getByRole('dialog'),'Speichern').tap();await settled(page);await page.getByRole('dialog').waitFor({state:'hidden'});
+  await btn(page,'Vorhandenen Fahrtag fortsetzen').tap();await page.getByRole('dialog').getByRole('checkbox').check();await btn(page.getByRole('dialog'),'Ausgewählten Fahrtag fortsetzen').tap();await settled(page);await page.getByRole('dialog').waitFor({state:'hidden'});
   await btn(page,'Daten').tap();await page.locator('.diary details').first().locator('summary').tap();await btn(page,'Fahrtag bearbeiten / Tour ergänzen').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);await btn(page,'Abbrechen').tap();
   state=await readApp(page);
   // A second deployment is discovered on the next online start without an explicit update() call.

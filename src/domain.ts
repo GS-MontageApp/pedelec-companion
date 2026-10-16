@@ -25,7 +25,8 @@ export interface GpxSummary {distanceKm:number;ascentM?:number;descentM?:number;
 export interface TourLink {id:string;rideDayId:string;url?:string;komootId?:string;gpx?:GpxSummary}
 export interface BoschDayStats {id:string;rideDayId:string;motorPercent?:number;riderPercent?:number;averageRiderWatts?:number;modes:Partial<Record<'Eco'|'Tour'|'Sport'|'eMTB'|'Turbo',number>>;loadNotes?:string;source:'manuell'}
 export interface RideSocPoint {id:string;soc:number;measuredAt:number;recordedAt:number;updatedAt?:number;kind:'start'|'checkpoint'|'end';note?:string}
-export interface RideDay {id:string;date:string;bikeId:string;configuration:Configuration;batteries:Battery[];startSoc:number;endSoc?:number;status?:'active'|'completed';socMeasurements?:RideSocPoint[];notes:string;sessionIds:string[];isTest?:boolean;startedAt?:number;endedAt?:number;socBasis?:'combined' | 'unknown'}
+export interface RideResumption {id:string;resumedAt:number;previousStartSoc:number;previousStartedAt?:number;previousEndSoc?:number;previousEndedAt?:number;previousStatus?:'active'|'completed';previousEndPointIds:string[]}
+export interface RideDay {id:string;date:string;bikeId:string;configuration:Configuration;batteries:Battery[];startSoc:number;endSoc?:number;status?:'active'|'completed';socMeasurements?:RideSocPoint[];resumptions?:RideResumption[];notes:string;sessionIds:string[];isTest?:boolean;startedAt?:number;endedAt?:number;socBasis?:'combined' | 'unknown'}
 export interface AppState { activeBikeId: string; chargerId: string; sessions: Session[];catalog?:Catalog;rideDays?:RideDay[];tourLinks?:TourLink[];boschStats?:BoschDayStats[];revision?:number;showDataNav?:boolean }
 export const bikes: Bike[] = [{id:'rm',name:'Supercharger2',manufacturer:'Riese & Müller',system:'Bosch · Nyon 2 (BUI350)'},{id:'yamaha',name:'Touring Hybrid',manufacturer:'Mein zweites Pedelec',system:'Yamaha'}];
 export const batteries: Battery[] = [{id:'akku-001',name:'PowerTube · Akku 1',nominalWh:500,soh:94,cycles:128,kilometers:4820,recordedAt:'2026-10-01',source:'Manuelle Demoangabe'},{id:'akku-002',name:'PowerTube · Akku 2',nominalWh:500,recordedAt:'2026-10-01',source:'Manuelle Demoangabe'},{id:'akku-003',name:'Touring · Akku 3',nominalWh:625,recordedAt:'2026-10-01',source:'Manuelle Demoangabe'}];
@@ -33,3 +34,14 @@ export const configurations: Configuration[] = [{id:'rm-config-1',bikeId:'rm',ba
 export const chargers: Charger[] = [{id:'compact',name:'Compact Charger',amps:2},{id:'fast',name:'Fast Charger',amps:6}];
 export function validSoc(value: string): boolean { return /^\d{1,3}$/.test(value) && Number(value)<=100; }
 export function elapsed(start: number, end: number): string { const s=Math.max(0,Math.floor((end-start)/1000)); return [Math.floor(s/3600),Math.floor(s/60)%60,s%60].map(v=>String(v).padStart(2,'0')).join(':'); }
+
+export const previousEndIds=(day:RideDay)=>new Set((day.resumptions??[]).flatMap(r=>r.previousEndPointIds));
+
+export function assertRideResumptions(day:RideDay){
+ const history=day.resumptions??[],points=day.socMeasurements??[],ids=history.flatMap(r=>r.previousEndPointIds);
+ if(new Set(history.map(r=>r.id)).size!==history.length||new Set(ids).size!==ids.length)throw new Error('Ein früherer Abschluss ist doppelt zugeordnet.');
+ for(const r of history){
+  const known=r.previousEndSoc!==undefined&&r.previousEndedAt!==undefined;
+  if(!Number.isFinite(r.resumedAt)||r.resumedAt<0||r.previousEndedAt!==undefined&&r.previousEndedAt>r.resumedAt||r.previousEndPointIds.length!==(known?1:0)||r.previousEndPointIds.some(id=>!points.some(p=>p.id===id&&p.kind==='end'&&p.soc===r.previousEndSoc&&p.measuredAt===r.previousEndedAt)))throw new Error('Frühere Abschlusswerte und Messpunkte passen nicht zusammen.');
+ }
+}

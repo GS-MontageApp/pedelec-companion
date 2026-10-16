@@ -13,3 +13,5 @@
 .active-ride{margin-bottom:24px}.active-ride>.full{margin-top:12px}.ride-readings{margin-top:24px}.ride-reading{border-top:1px solid #e2e6db;padding:16px 0;overflow-wrap:anywhere}.ride-reading small{display:block;font-size:12px;margin-top:6px;color:#74806b}.ride-reading p{font-size:13px;margin-top:8px}.reading-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.reading-actions button{min-height:44px;font-size:12px;padding:10px}.ride-readings h3{margin-bottom:12px}
 
 .charge-layout>*{min-width:0}.card-top{flex-wrap:wrap}.charge-actions{flex-wrap:wrap}.charge-actions>button{flex:1 1 140px}
+
+.delete-ride{margin-top:10px}.resume-choice{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid #e2e6db;min-height:44px}.resume-choice input{width:22px;height:22px;flex-shrink:0;accent-color:#294e3e}.resume-choice span{min-width:0}.resume-choice small{display:block;margin-top:6px;overflow-wrap:anywhere}.record-id{font-size:10px}.sheet>.full{margin-top:12px}
