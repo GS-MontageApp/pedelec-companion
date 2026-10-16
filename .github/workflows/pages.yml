@@ -115,7 +115,7 @@ jobs:
             echo "| Entwicklungsphase 1 | $PHASE1 |"
             echo "| Offline / Sicherung / Update | $PWA |"
             echo 'Tests sind informativ. Nur ein erfolgreicher separater Produktionsbuild darf veröffentlicht werden.'
-            echo 'F01 bleibt offen; Ä04/Ä05 nicht implementiert; Ä08/Ä09 geplant.'
+            echo 'F01: Inline-Bearbeitung korrigiert; Ä04/Ä05 nicht implementiert; Ä08/Ä09 geplant.'
           } >> "$GITHUB_STEP_SUMMARY"
           if [[ "$DOMAIN $BUILD $BROWSER $SERVER $CHARGING $PHASE1 $PWA" == *failure* ]]; then
             echo '::warning::Mindestens eine Prüfung fehlgeschlagen. Testbericht beachten; Teststand kann trotzdem veröffentlicht sein.'

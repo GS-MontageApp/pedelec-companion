@@ -46,7 +46,7 @@ Android: App online öffnen, auf Updatehinweis achten. Während einer Ladung ode
 
 ## Offene Punkte
 
-- **F01: offen**, ausdrücklich nicht in diesem Auftrag behoben. Eine fachliche Beschreibung liegt im vorhandenen Projektstand nicht vor; keine Ursache oder Lösung wird behauptet.
+- **F01: behoben**. Das Bearbeitungsformular erschien oberhalb der Liste außerhalb des sichtbaren Bereichs. Es erscheint jetzt direkt im anhand seiner ID ausgewählten Fahrtag; beim Schließen bleibt der ausgewählte Eintrag sichtbar. Vorhandene Duplikate bleiben erhalten.
 - **Ä04/Ä05: nicht implementieren** (spätere Plausibilitätslogik).
 - **Ä08/Ä09: geplant**, unverändert außerhalb dieses Auftrags.
 - Ein technisch baubarer Teststand kann fachliche Fehler enthalten. Maßgeblich sind die getrennten Testergebnisse im Actions-Bericht.
@@ -59,4 +59,10 @@ Android: App online öffnen, auf Updatehinweis achten. Während einer Ladung ode
 - Fahrtage/SOC/Daten-Navigation: mobile Browserprüfung bestanden.
 - PWA: Offline-Neustart, JSON-Import/-Export, Update beim nächsten Online-Start, Sperre während aktiver Ladung und offener Eingaben, Aktivierung aus einem zweiten Tab ohne Reload, anschließendes bewusstes Update und unveränderter IndexedDB-Inhalt bestanden.
 - Tests verwenden isolierte Browserprofile und synthetische Daten. Kein echter Android-Gerätetest in diesem Auftrag.
-- F01 bleibt ungeklärt offen; keine zusätzlichen bekannten Testfehler. Den tatsächlichen CI-/Deployment-Status zeigt der Actions-Lauf des veröffentlichten Commits.
+- Stand des ursprünglichen Workflow-Auftrags: F01 war noch ungeklärt offen; inzwischen im Folgeauftrag zur Inline-Bearbeitung behoben. Keine zusätzlichen bekannten Testfehler. Den tatsächlichen CI-/Deployment-Status zeigt der Actions-Lauf des veröffentlichten Commits.
+
+## F01 – Inline-Bearbeitung (16.10.2026)
+
+Ursache: Der funktionierende Bearbeiten-Handler wählte die ID aus, der gemeinsame Editor wurde aber am Listenanfang gerendert. Bestehende Fahrtage erhalten nun ihren Editor innerhalb des ausgewählten Eintrags. Neuerfassung bleibt oben. Genau ein Editor ist offen; die Auswahl verwendet einen eigenen Zustand für neue beziehungsweise per ID ausgewählte bestehende Datensätze. Formularüberschrift und Rückkehr zur Bearbeiten-Schaltfläche werden gezielt fokussiert, ohne an den Seitenanfang zu springen. Die vorhandenen Farben bleiben unverändert.
+
+Regression: 42 synthetische Fahrtage inklusive mehrfach gleichem Datum auf Touch-Viewports mit 320, 390 und 412 Pixeln Breite. Beide ausgewählten Duplikate werden unabhängig bearbeitet; Anzahl, Ladezuordnung und Sitzungsdaten bleiben nach Speichern/Abbrechen/Reload erhalten. Zusätzlich 37 Fach-/Speichertests, TypeScript, Produktionsbuild und PWA-/Offline-/Updateprüfung bestanden. Kein echtes Android-Gerät in diesem Auftrag getestet. Kein Datenbankschema und keine Migration geändert.

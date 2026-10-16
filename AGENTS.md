@@ -40,5 +40,5 @@ Semantische und barrierearme Controls, 44px+ Touch-Ziele, keine horizontalen Scr
 - Keine Zugangsdaten, privaten Schlüssel, lokalen Datenbanken, Sicherungen oder persönlichen Testdaten committen. Nur synthetische, unpersönliche Test-Fixtures verwenden; neue Dateien vor dem Commit prüfen.
 - PWA-Updates anbieten, nicht während SOC-Eingaben, offener Bearbeitung oder laufendem Ladevorgang erzwingen. Auch Updates in anderen Tabs dürfen keine unbestätigten Reloads auslösen.
 - IndexedDB bei normalen Updates erhalten. Keine automatische Löschung oder Zurücksetzung. Bei notwendigen Schemaänderungen explizite datenerhaltende Dexie-Migrationen mit Wiederherstellungstests verwenden.
-- F01 bleibt offen; seine fachliche Beschreibung ist im aktuellen Projektstand nicht dokumentiert und darf nicht erfunden oder als behoben gemeldet werden. Ä04 und Ä05 nicht implementieren. Ä08 und Ä09 bleiben geplant.
+- F01 ist aufgeklärt und behoben: Fahrtag-Editoren müssen direkt im per eindeutiger ID ausgewählten Datensatz erscheinen; lange Listen und vorhandene Duplikate bleiben einzeln bearbeitbar. Ä04 und Ä05 nicht implementieren. Ä08 und Ä09 bleiben geplant.
 - Ablauf und Betrieb: `docs/DEVELOPMENT_WORKFLOW.md`.
