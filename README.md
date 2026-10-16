@@ -105,3 +105,5 @@ Prüfungen und Android-Testschritte: [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.
 Ä08: [Aktiver Fahrtag, SOC-Schnelleingabe und Android-Shortcut](docs/ACTIVE_RIDE.md). Unter Reisen starten, unterwegs Messungen speichern und abends mit End-SOC abschließen.
 
 Ä10: [Fahrtage einzeln löschen und vorhandene Fahrtage fortsetzen](docs/RIDE_MANAGEMENT.md). Löschen mit Bestätigung im Fahrtenbuch; Fortsetzen heutiger Einträge unter Reisen mit Datensatzauswahl und aufbewahrtem früherem Abschluss.
+
+Ä11: [Gemeinsamer SOC-Verlauf, automatische Zwischenladungen und Verbrauchsbilanz](docs/SOC_JOURNEY.md). Neue SOC-Eingaben bleiben leer; unklare Zuordnungen und auffällige Anstiege brauchen eine bewusste Bestätigung.

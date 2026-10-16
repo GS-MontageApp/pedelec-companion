@@ -12,13 +12,13 @@ const start=()=>startRide(initialState(),'rm','100',at);
 test('active day starts with stable snapshot and no invented end, finishes with explicit endpoint',()=>{
  let s=start(),d=activeRide(s);assert.equal(d.endSoc,undefined);assert.equal(d.socMeasurements[0].kind,'start');assert.equal(d.startedAt,at);
  for(const n of ['101','-1','1.5','abc',''])assert.throws(()=>startRide(initialState(),'rm',n,at));
- s=captureRideSoc(s,d.id,'80','Anstieg',at+1000);s=captureRideSoc(s,d.id,'95','nach Ladepause',at+2000);
+ s=captureRideSoc(s,d.id,'80','Anstieg',at+1000);s=captureRideSoc(s,d.id,'95','nach Ladepause',at+2000,true);
  assert.equal(activeRide(s).socMeasurements.length,3);assert.equal(new Set(activeRide(s).socMeasurements.map(p=>p.id)).size,3);
  assert.throws(()=>startRide(s,'yamaha','60',at));s=endRide(s,d.id,'50',at+3000);d=s.rideDays[0];assert.equal(activeRide(s),undefined);assert.equal(d.endSoc,50);assert.equal(d.socMeasurements.at(-1).kind,'end');assert.equal(d.endedAt,at+3000);
  assert.throws(()=>startRide(s,'rm','50',at+4000),/existiert/);assert.equal(regularRideDays({...s,rideDays:[{...d,isTest:true}]}).length,0);
 });
-test('correction and deletion affect exactly one checkpoint; no SOC rise/decrease plausibility blocking',()=>{
- let s=start(),id=activeRide(s).id;s=captureRideSoc(s,id,'12','',at+2000);s=captureRideSoc(s,id,'100','',at+3000);const p=activeRide(s).socMeasurements[1];
+test('correction and deletion affect exactly one checkpoint; SOC rises remain explicitly confirmable',()=>{
+ let s=start(),id=activeRide(s).id;s=captureRideSoc(s,id,'12','',at+2000);s=captureRideSoc(s,id,'100','',at+3000,true);const p=activeRide(s).socMeasurements[1];
  s=correctRideSoc(s,id,p.id,'22',at+1500,'korrigiert',at+4000);assert.equal(activeRide(s).socMeasurements[1].id,p.id);assert.equal(activeRide(s).socMeasurements[1].recordedAt,p.recordedAt);assert.equal(ridePoints(activeRide(s))[1].soc,22);
  assert.throws(()=>correctRideSoc(s,id,p.id,'10',at-1));assert.throws(()=>deleteRideSoc(s,id,activeRide(s).socMeasurements[0].id));
  s=deleteRideSoc(s,id,p.id);assert.equal(activeRide(s).id,id);assert.equal(activeRide(s).socMeasurements.length,2);assert.equal(activeRide(s).socMeasurements[1].soc,100);

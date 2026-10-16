@@ -1,5 +1,6 @@
 import {XMLParser,XMLValidator} from 'fast-xml-parser';
 import type {AppState,GpxSummary,RideDay,Session} from './domain.ts';
+import {samePack,temporalFit} from './socJourney.ts';
 import {chronological,forecastMeasurements} from './charging.ts';
 
 export function komootLink(input:string):{url:string;id?:string} {
@@ -16,17 +17,16 @@ export function testSuggestion(session:Session):string|null {
   return null;
 }
 export function learningMeasurements(session:Session){
-  if(session.isTest)return [];
+  if(session.isTest||session.startSocWarning)return [];
   const sorted=chronological(session.measurements);
   return forecastMeasurements(sorted).filter(m=>!sorted.slice(0,sorted.findIndex(p=>p.id===m.id)).some(p=>p.soc>m.soc));
 }
 export function compatibleCharge(day:Pick<RideDay,'date'|'bikeId'|'configuration'>,s:Session) {
-  const local=(n:number)=>new Date(n).toLocaleDateString('sv-SE');
-  return s.endedAt!==undefined&&s.snapshot.bike.id===day.bikeId&&s.snapshot.configuration.id===day.configuration.id&&[local(s.startedAt),local(s.endedAt)].includes(day.date);
+  return samePack(day,s);
 }
 export {dayBalance} from './rideRules.ts';
 export function chargeSuggestions(day:RideDay,state:AppState){
- return state.sessions.filter(s=>compatibleCharge(day,s)||day.sessionIds.includes(s.id)).map(session=>({session,
+ return state.sessions.filter(s=>compatibleCharge(day,s)&&temporalFit(day,s)!=='outside'||day.sessionIds.includes(s.id)).map(session=>({session,
   usedElsewhere:(state.rideDays??[]).some(d=>d.id!==day.id&&d.sessionIds.includes(session.id)),
   withinRide:day.startedAt!==undefined&&day.endedAt!==undefined&&session.startedAt>=day.startedAt&&session.endedAt!==undefined&&session.endedAt<=day.endedAt}));
 }

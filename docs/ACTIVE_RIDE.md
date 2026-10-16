@@ -6,7 +6,7 @@
 2. Unterwegs **Akkustand erfassen → Ziffern → Speichern**. Datum und Uhrzeit werden automatisch erfasst. Notizen sind eingeklappt und optional; GPS, Internet oder GPX sind nicht erforderlich. Es erfolgt keine Standortabfrage.
 3. In der Messliste Zwischenmessungen bewusst korrigieren (SOC, Datum/Uhrzeit, Notiz) oder nach Sicherheitsabfrage einzeln löschen. Start- und Endwerte werden über den Fahrtag-Editor korrigiert; sie können nicht versehentlich als einzelne Zwischenmessung gelöscht werden.
 4. Abends **Fahrtag beenden**, End-SOC eingeben und speichern. Der abgeschlossene Fahrtag bleibt unter **Daten** einzeln bearbeitbar. Es wird kein Endwert vorzeitig erfunden.
-5. Eine Zwischenladung im Bereich **Laden** durchführen. Der Fahrtag bleibt aktiv. Unter **Daten → Fahrtag bearbeiten** die passende abgeschlossene Ladepause bewusst zuordnen. Keine automatische Zuordnung oder Beendigung.
+5. Eine Zwischenladung im Bereich **Laden** durchführen. Der Fahrtag bleibt aktiv. Eindeutig passende Ladungen werden seit Ä11 automatisch im aktiven Fahrtag verknüpft. Unklare Zuordnungen werden sichtbar zur Bestätigung angeboten; manuelle Zuordnungen bleiben im Editor erhalten. Keine automatische Beendigung des Fahrtags.
 
 Ein aktiver Fahrtag gilt appweit; ein Ladevorgang darf gleichzeitig laufen. Ein bereits vorhandener Fahrtag für dasselbe Fahrrad/Datum verhindert einen zweiten Start, ohne bestehende Datensätze zu überschreiben. Altbestandsduplikate bleiben vollständig erhalten und einzeln bearbeitbar. Ein am Folgetag beendeter aktiver Fahrtag bleibt seinem Startdatum zugeordnet.
 

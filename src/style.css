@@ -15,3 +15,5 @@
 .charge-layout>*{min-width:0}.card-top{flex-wrap:wrap}.charge-actions{flex-wrap:wrap}.charge-actions>button{flex:1 1 140px}
 
 .delete-ride{margin-top:10px}.resume-choice{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid #e2e6db;min-height:44px}.resume-choice input{width:22px;height:22px;flex-shrink:0;accent-color:#294e3e}.resume-choice span{min-width:0}.resume-choice small{display:block;margin-top:6px;overflow-wrap:anywhere}.record-id{font-size:10px}.sheet>.full{margin-top:12px}
+
+.ride-balance{background:#edf1e7;border-radius:16px;padding:18px;margin:18px 0}.balance-number{display:block;font-size:36px;line-height:1.2;color:#294e3e;font-variant-numeric:tabular-nums}.balance-number span{font-size:14px;font-weight:500;display:block;margin-top:6px}.balance-parts{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:12px;margin:16px 0}.link-review{margin:18px 0;overflow-wrap:anywhere}.link-review .full{white-space:normal;overflow-wrap:anywhere;margin-top:10px}.ride-balance .hint{margin-top:10px}
