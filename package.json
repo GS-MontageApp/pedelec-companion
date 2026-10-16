@@ -11,7 +11,8 @@
     "test:browser": "node scripts/test-mobile.cjs && node scripts/test-finish.cjs",
     "typecheck": "tsc -b",
     "test:phase1": "node scripts/test-phase1.cjs",
-    "test:pwa": "node scripts/test-pwa.cjs"
+    "test:pwa": "node scripts/test-pwa.cjs",
+    "test:active-ride": "node scripts/test-active-ride.cjs"
   },
   "dependencies": {
     "dexie": "^4.4.6",

@@ -52,6 +52,9 @@ async function digits(p,value){await btn(p,'Eingabe löschen').tap();await settl
   await btn(page,'Schließen').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);
   await btn(page,'Beenden').tap();await page.getByLabel('Akkustand unbekannt').check();await btn(page,'Ladung abschließen').tap();await settled(page);
   await btn(page,'Ladevorgang starten').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);await btn(page,'Schließen').tap();
+  // Update preserves an active ride and its new nested SOC points, including editing protection.
+  await btn(page,'Reisen').tap();await btn(page,'Fahrtag starten').tap();await page.getByRole('dialog').getByLabel('Fahrrad',{exact:true}).selectOption('yamaha');await digits(page,52);await btn(page.getByRole('dialog'),'Speichern').tap();await settled(page);await page.getByRole('dialog').waitFor({state:'hidden'});
+  await btn(page,'Akkustand erfassen').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);await digits(page,48);await btn(page.getByRole('dialog'),'Speichern').tap();await settled(page);await page.getByRole('dialog').waitFor({state:'hidden'});
   await btn(page,'Daten').tap();await page.locator('.diary details').first().locator('summary').tap();await btn(page,'Fahrtag bearbeiten / Tour ergänzen').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);await btn(page,'Abbrechen').tap();
   state=await readApp(page);
   // A second deployment is discovered on the next online start without an explicit update() call.
@@ -60,8 +63,8 @@ async function digits(p,value){await btn(p,'Eingabe löschen').tap();await settl
   await page.getByText('Neue Version verfügbar.',{exact:true}).waitFor({timeout:20000});
   const revision=state.revision;await btn(page,'Gespeichert – jetzt aktualisieren').tap();await settled(page);
   await page.waitForFunction(()=>document.querySelector('.app')?.getAttribute('aria-busy')==='false');
-  await btn(page,'Ladevorgang starten').waitFor();assert.equal((await readApp(page)).revision,revision);assert.deepEqual(await readApp(page),state);
-  await context.setOffline(true);await page.reload();await settled(page);assert.equal((await readApp(page)).rideDays.length,1);await context.setOffline(false);
+  await btn(page,'Akkustand erfassen').waitFor();assert.equal((await readApp(page)).revision,revision);assert.deepEqual(await readApp(page),state);
+  await context.setOffline(true);await page.reload();await settled(page);assert.equal((await readApp(page)).rideDays.length,2);await context.setOffline(false);
   fs.mkdirSync('.test-artifacts',{recursive:true});await btn(page,'Daten').tap();await settled(page);await page.locator('.diary details').first().locator('summary').tap();await settled(page);await page.screenshot({path:'.test-artifacts/diary-pwa.png',fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.deepEqual(errors,[]);
   await context.close();

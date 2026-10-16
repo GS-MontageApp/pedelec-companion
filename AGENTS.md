@@ -9,7 +9,7 @@ Implementiere einen hochwertigen, bedienbaren, mobilen Look-and-Feel-Prototyp. K
 React, TypeScript, Vite, Tailwind CSS, Lucide Icons. PWA-freundlich, responsive, mobile-first, iOS-inspiriert ohne native UI vorzutäuschen. Achte auf Safe Areas und gute Android-/iPhone-Bedienbarkeit.
 
 ## Navigation
-Fixierte Bottom-Navigation: Reisen, Laden, Einstellungen. Starttab: Laden.
+Fixierte Bottom-Navigation: Reisen, Laden, Einstellungen. Öffnen/Wiederaufnehmen: aktive Ladung vor aktivem Fahrtag, sonst letzten Reiter wiederherstellen. Während der Bedienung kein automatischer Wechsel.
 
 Aktueller Ausbau: Reisen, Laden, Daten, Einstellungen. Daten enthält Fahrtenbuch und GPX; der Footer-Eintrag ist optional, der Zugang über Einstellungen bleibt bestehen.
 
@@ -40,5 +40,5 @@ Semantische und barrierearme Controls, 44px+ Touch-Ziele, keine horizontalen Scr
 - Keine Zugangsdaten, privaten Schlüssel, lokalen Datenbanken, Sicherungen oder persönlichen Testdaten committen. Nur synthetische, unpersönliche Test-Fixtures verwenden; neue Dateien vor dem Commit prüfen.
 - PWA-Updates anbieten, nicht während SOC-Eingaben, offener Bearbeitung oder laufendem Ladevorgang erzwingen. Auch Updates in anderen Tabs dürfen keine unbestätigten Reloads auslösen.
 - IndexedDB bei normalen Updates erhalten. Keine automatische Löschung oder Zurücksetzung. Bei notwendigen Schemaänderungen explizite datenerhaltende Dexie-Migrationen mit Wiederherstellungstests verwenden.
-- F01 ist aufgeklärt und behoben: Fahrtag-Editoren müssen direkt im per eindeutiger ID ausgewählten Datensatz erscheinen; lange Listen und vorhandene Duplikate bleiben einzeln bearbeitbar. Ä04 und Ä05 nicht implementieren. Ä08 und Ä09 bleiben geplant.
+- F01 ist aufgeklärt und behoben: Fahrtag-Editoren müssen direkt im per eindeutiger ID ausgewählten Datensatz erscheinen; lange Listen und vorhandene Duplikate bleiben einzeln bearbeitbar. Ä04 und Ä05 nicht implementieren. Ä08 ist umgesetzt: aktiver Fahrtag und SOC-Messpunkte mit stabilen IDs, persistenter Wiederaufnahme und bewusst zugeordneten Ladepausen. Ä09 bleibt geplant.
 - Ablauf und Betrieb: `docs/DEVELOPMENT_WORKFLOW.md`.

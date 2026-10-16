@@ -11,7 +11,7 @@ pnpm install
 pnpm dev
 ```
 
-Browser: http://localhost:5173/pedelec-companion/ . Smartphone im selben WLAN: die von Vite angezeigte Netzwerkadresse verwenden, z. B. http://192.168.178.31:5173/pedelec-companion/ . Der Projektpfad ist jetzt auch lokal Bestandteil der URL.
+Browser: http://localhost:5173/pedelec-companion/ . Smartphone im selben WLAN: die von Vite angezeigte Netzwerkadresse verwenden, z. B. http://192.168.x.x:5173/pedelec-companion/ . Der Projektpfad ist jetzt auch lokal Bestandteil der URL.
 
 ```sh
 pnpm test
@@ -71,7 +71,7 @@ Optionale Bosch-Tagesangaben werden manuell erfasst: Motor-/Fahreranteil, durchs
 Playwright ist Entwicklungsabhängigkeit. Standardmäßig wird installierter Microsoft Edge verwendet. Unter Linux/CI: `pnpm exec playwright install --with-deps chromium` und `TEST_BROWSER_CHANNEL=chromium`. Die bestehende Lade-Regression auf Android-ähnlichem Touch-Viewport prüft vorzugsweise die echte HTTP-LAN-Origin ohne `crypto.randomUUID`.
 
 ```powershell
-$env:TEST_BASE_URL = 'http://192.168.178.31:5173/pedelec-companion/'
+$env:TEST_BASE_URL = 'http://192.168.x.x:5173/pedelec-companion/'
 pnpm run test:browser
 # Produktionsbuild und Preview vorher starten:
 $env:TEST_PWA_URL = 'http://localhost:4173/pedelec-companion/'
@@ -101,3 +101,5 @@ Optionale Fahrtzeiten grenzen Ladepausen ein. Die Vorschläge zeigen passende ab
 „Daten in der unteren Navigation anzeigen“ ist standardmäßig aktiv. Ausschalten entfernt nur den Footer-Punkt. Einstellungen → „Daten öffnen · Fahrtenbuch und GPX“ bleibt verfügbar. Alle Daten und die Einstellung bleiben nach Neuladen erhalten. IndexedDB-Schema und JSON-Format bleiben auf Version 1; neue Felder sind optional, alte Sicherungen lesbar. Keine neue Ladezeit- oder umfassende Fahrt-SOC-Plausibilitätslogik (Ä04/Ä05).
 
 Prüfungen und Android-Testschritte: [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.md).
+
+Ä08: [Aktiver Fahrtag, SOC-Schnelleingabe und Android-Shortcut](docs/ACTIVE_RIDE.md). Unter Reisen starten, unterwegs Messungen speichern und abends mit End-SOC abschließen.

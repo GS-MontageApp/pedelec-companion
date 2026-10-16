@@ -48,7 +48,7 @@ Android: App online öffnen, auf Updatehinweis achten. Während einer Ladung ode
 
 - **F01: behoben**. Das Bearbeitungsformular erschien oberhalb der Liste außerhalb des sichtbaren Bereichs. Es erscheint jetzt direkt im anhand seiner ID ausgewählten Fahrtag; beim Schließen bleibt der ausgewählte Eintrag sichtbar. Vorhandene Duplikate bleiben erhalten.
 - **Ä04/Ä05: nicht implementieren** (spätere Plausibilitätslogik).
-- **Ä08/Ä09: geplant**, unverändert außerhalb dieses Auftrags.
+- **Ä08: umgesetzt**, siehe `ACTIVE_RIDE.md`. **Ä09: geplant**.
 - Ein technisch baubarer Teststand kann fachliche Fehler enthalten. Maßgeblich sind die getrennten Testergebnisse im Actions-Bericht.
 
 ## Lokaler Prüfbericht vom 16.10.2026

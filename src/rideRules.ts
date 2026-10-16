@@ -3,7 +3,15 @@ import type {AppState,RideDay,Session} from './domain.ts';
 const soc=(n:unknown)=>typeof n==='number'&&Number.isInteger(n)&&n>=0&&n<=100;
 export function assertSocData(state:AppState){
  for(const s of state.sessions)if(s.measurements.some(m=>!soc(m.soc))||(s.endSoc!=null&&!soc(s.endSoc)))throw new Error('Akkustände müssen ganze Zahlen von 0 bis 100 sein.');
- for(const d of state.rideDays??[])if(!soc(d.startSoc)||!soc(d.endSoc))throw new Error('Akkustände müssen ganze Zahlen von 0 bis 100 sein.');
+ if((state.rideDays??[]).filter(d=>d.status==='active').length>1)throw new Error('Es darf nur ein Fahrtag aktiv sein.');
+ for(const day of state.rideDays??[]){
+  if(!day.status)continue;
+  if(day.startedAt===undefined||day.status==='active'&&(day.endedAt!==undefined||day.endSoc!==undefined)||day.status==='completed'&&(day.endedAt===undefined||day.endSoc===undefined))throw new Error('Start-/Endzustand des Fahrtags ist unvollständig.');
+  const points=day.socMeasurements??[];
+  if(new Set(points.map(p=>p.id)).size!==points.length||points.filter(p=>p.kind==='start').length!==1||points.filter(p=>p.kind==='end').length!==(day.status==='active'?0:1)||points.some(p=>!Number.isFinite(p.measuredAt)||!Number.isFinite(p.recordedAt)||p.measuredAt<day.startedAt!||day.endedAt!==undefined&&p.measuredAt>day.endedAt))throw new Error('Bitte die Messzeitpunkte innerhalb des Fahrtags prüfen.');
+  if(points.some(p=>p.kind==='start'&&(p.soc!==day.startSoc||p.measuredAt!==day.startedAt)||p.kind==='end'&&(p.soc!==day.endSoc||p.measuredAt!==day.endedAt)))throw new Error('Start-/Endmesspunkt passt nicht zum Fahrtag.');
+ }
+ for(const d of state.rideDays??[])if(!soc(d.startSoc)||(d.status==='active'?d.endSoc!==undefined:!soc(d.endSoc))||(d.socMeasurements??[]).some(p=>!soc(p.soc)))throw new Error('Akkustände müssen ganze Zahlen von 0 bis 100 sein.');
 }
 export function duplicateRideDays(days:RideDay[]){return days.filter(d=>days.some(other=>other.id!==d.id&&other.bikeId===d.bikeId&&other.date===d.date));}
 export function saveRideDay(state:AppState,day:RideDay):AppState{
@@ -15,8 +23,9 @@ export function saveRideDay(state:AppState,day:RideDay):AppState{
   const s=state.sessions.find(s=>s.id===id);
   if(!s||s.endedAt===undefined||!sameConfiguration({...day,socBasis:'combined'},s)||![s.startedAt,s.endedAt].some(t=>new Date(t).toLocaleDateString('sv-SE')===day.date))throw new Error('Eine Ladezuordnung passt nicht mehr zum Datum, Fahrrad oder zur Akkukonfiguration. Bitte prüfen und entfernen.');
  }
- if([day.startedAt,day.endedAt].some(t=>t!==undefined&&(!Number.isFinite(t)||new Date(t).toLocaleDateString('sv-SE')!==day.date)))throw new Error('Bitte gültige Fahrtzeiten am gewählten Datum eingeben.');
+ if([day.startedAt,day.endedAt].some(t=>t!==undefined&&(!Number.isFinite(t)||(!day.status||t===day.startedAt)&&new Date(t).toLocaleDateString('sv-SE')!==day.date)))throw new Error('Bitte gültige Fahrtzeiten am gewählten Datum eingeben.');
  if(day.startedAt!==undefined&&day.endedAt!==undefined&&day.endedAt<day.startedAt)throw new Error('Das Fahrtende darf nicht vor dem Fahrtbeginn liegen.');
+ if(day.status==='active'&&(state.rideDays??[]).some(d=>d.id!==day.id&&d.status==='active'))throw new Error('Es ist bereits ein Fahrtag aktiv.');
  const next={...state,rideDays:[...(state.rideDays??[]).filter(d=>d.id!==day.id),day]};assertSocData(next);return next;
 }
 function sameConfiguration(day:RideDay,s:Session){
@@ -33,6 +42,6 @@ export function dayBalance(day:RideDay,state:AppState){
   charged+=s.endSoc-first.soc;
  }
  const duplicate=duplicateRideDays(state.rideDays??[]).some(d=>d.id===day.id);
- return {charged,consumed:day.startSoc+charged-day.endSoc,complete:excluded.length===0&&!day.isTest&&!duplicate&&day.socBasis!=='unknown',excluded};
+ return {charged,consumed:day.endSoc===undefined?undefined:day.startSoc+charged-day.endSoc,complete:day.status!=='active'&&day.endSoc!==undefined&&excluded.length===0&&!day.isTest&&!duplicate&&day.socBasis!=='unknown',excluded};
 }
 export function regularRideDays(state:AppState){return (state.rideDays??[]).filter(d=>!d.isTest&&dayBalance(d,state).complete);}
