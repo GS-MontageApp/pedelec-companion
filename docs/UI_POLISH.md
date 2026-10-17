@@ -35,3 +35,5 @@ Auf Android:
 Nicht umgesetzt: individuelles Ladeziel, neue Prognosekurve, Erinnerungen, GPX-/Komoot-Erweiterungen oder umfassende Ä04/Ä05-Plausibilitätsregeln.
 
 Lokaler Prüfstand: 74 Fach-/Speichertests bestanden; TypeScript und Produktionsbuild erfolgreich. Sämtliche bestehenden Lade-, Fahrtag-, Lösch-, Zuordnungs-, Langlisten-, Offline-/Backup-/Updateprüfungen bestanden. Finale Ä13a-Prüfung auf 320/360/390/412/1280 Pixeln erfolgreich, einschließlich visueller Kontrolle. Ein während des Neubaus gestarteter Browserlauf wurde verworfen und nach vollständigem Build erfolgreich wiederholt. Kein echter Android-Gerätetest durch Codex.
+
+Ä13a.1: Die Ladekarte ist inzwischen auch ohne aktive Ladung ein Snap-Ziel. Die Fahrtag-Position liegt ca. 40–48 px höher; die Überschrift bleibt sichtbar. Beim Fahrtenbuch markiert ein kurzer Anker den Kartenanfang, damit lange Listen den nächsten Hauptbereich nicht festhalten. Die Historie liegt unter Daten und verwendet Haupt- und Einzelakkordeons. Siehe `DATA_MANAGEMENT.md`.

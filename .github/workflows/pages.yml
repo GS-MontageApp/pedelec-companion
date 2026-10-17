@@ -127,6 +127,14 @@ jobs:
           TEST_PWA_URL: http://localhost:4173/pedelec-companion/
           TEST_BROWSER_CHANNEL: chromium
         run: pnpm run test:ui-polish 2>&1 | tee .test-artifacts/ui-polish.log
+      - name: Scrollverhalten und Datenverwaltung Ä13a.1
+        id: dataManagement
+        if: steps.server.outcome == 'success'
+        continue-on-error: true
+        env:
+          TEST_PWA_URL: http://localhost:4173/pedelec-companion/
+          TEST_BROWSER_CHANNEL: chromium
+        run: pnpm run test:data-management 2>&1 | tee .test-artifacts/data-management.log
       - name: Offline, Sicherung und Update
         id: pwa
         if: steps.server.outcome == 'success'
@@ -150,6 +158,7 @@ jobs:
           SOC_JOURNEY: ${{ steps.socJourney.outcome }}
           CHARGE_MANAGEMENT: ${{ steps.chargeManagement.outcome }}
           UI_POLISH: ${{ steps.uiPolish.outcome }}
+          DATA_MANAGEMENT: ${{ steps.dataManagement.outcome }}
         run: |
           {
             echo '## Teststand – Ergebnisse'
@@ -166,11 +175,12 @@ jobs:
             echo "| Gemeinsamer SOC-Verlauf | $SOC_JOURNEY |"
             echo "| Ladungen löschen / Ladeprognose | $CHARGE_MANAGEMENT |"
             echo "| Bedienung / Darstellung Ä13a | $UI_POLISH |"
+            echo "| Scrollen / Datenverwaltung Ä13a.1 | $DATA_MANAGEMENT |"
             echo "| Offline / Sicherung / Update | $PWA |"
             echo 'Tests sind informativ. Nur ein erfolgreicher separater Produktionsbuild darf veröffentlicht werden.'
             echo 'F01: Inline-Bearbeitung korrigiert; Ä04/Ä05 nicht implementiert; Ä08 umgesetzt; Ä09 geplant.'
           } >> "$GITHUB_STEP_SUMMARY"
-          if [[ "$DOMAIN $BUILD $BROWSER $SERVER $CHARGING $PHASE1 $PWA $ACTIVE_RIDE $RIDE_MANAGEMENT $SOC_JOURNEY $CHARGE_MANAGEMENT $UI_POLISH" == *failure* ]]; then
+          if [[ "$DOMAIN $BUILD $BROWSER $SERVER $CHARGING $PHASE1 $PWA $ACTIVE_RIDE $RIDE_MANAGEMENT $SOC_JOURNEY $CHARGE_MANAGEMENT $UI_POLISH $DATA_MANAGEMENT" == *failure* ]]; then
             echo '::warning::Mindestens eine Prüfung fehlgeschlagen. Testbericht beachten; Teststand kann trotzdem veröffentlicht sein.'
           fi
       - uses: actions/upload-artifact@v4

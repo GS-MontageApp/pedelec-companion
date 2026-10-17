@@ -1,4 +1,4 @@
-const {readApp,settled,browserOptions}=require('./browser-data.cjs');
+const {readApp,settled,browserOptions,openDataSection}=require('./browser-data.cjs');
 const assert=require('node:assert/strict');
 const {mkdirSync}=require('node:fs');
 const {chromium}=require('playwright');
@@ -7,7 +7,7 @@ if(!url)throw new Error('TEST_BASE_URL muss eine HTTP-LAN-Adresse angeben.');
 const button=(page,name)=>page.getByRole('button',{name,exact:true});
 async function digits(page,value){await button(page,'Eingabe löschen').tap();await settled(page);for(const digit of String(value))await button(page,digit).tap();await settled(page);}
 async function saved(page){return (await readApp(page)).sessions[0];}
-async function start(page,soc){await button(page,'Ladevorgang starten').tap();await settled(page);await digits(page,soc);await button(page,'Laden starten').tap();await settled(page);}
+async function start(page,soc){await button(page,'Laden').tap();await button(page,'Ladevorgang starten').tap();await settled(page);await digits(page,soc);await button(page,'Laden starten').tap();await settled(page);}
 async function fullPoint(page){await button(page,'Zwischenstand').tap();await settled(page);await digits(page,100);await button(page,'Zwischenstand speichern').tap();await settled(page);assert.match(await page.getByRole('dialog').innerText(),/Akku vollständig geladen\? Möchtest du den Ladevorgang jetzt abschließen\?/);}
 (async()=>{
  const browser=await chromium.launch(browserOptions());
@@ -32,13 +32,13 @@ async function fullPoint(page){await button(page,'Zwischenstand').tap();await se
    await button(page,'Ladung abschließen').tap();await settled(page);
    let result=await saved(page);assert.equal(result.endSoc,80);assert.equal(result.measurements.length,2);
    assert.equal(result.measurements.at(-1).measuredAt,result.endedAt);
-   assert.match(await page.locator('.session-record').first().locator('summary').innerText(),/End-SOC.*80 %/s);
+   await openDataSection(page,'charges');assert.match(await page.locator('.completed-history .session-record').first().locator('summary').innerText(),/End-SOC.*80 %/s);
    await page.reload();await settled(page);assert.deepEqual(await saved(page),result);
 
    await start(page,22);await button(page,'Beenden').tap();await settled(page);await page.getByLabel('Akkustand unbekannt').check();
    await button(page,'Ladung abschließen').tap();await settled(page);result=await saved(page);
    assert.equal(result.endSoc,null);assert.equal(result.measurements.length,1);assert.equal(result.endMeasurementId,undefined);
-   assert.match(await page.locator('.session-record').first().locator('summary').innerText(),/End-SOC.*Nicht erfasst/s);
+   await openDataSection(page,'charges');assert.match(await page.locator('.completed-history .session-record').first().locator('summary').innerText(),/End-SOC.*Nicht erfasst/s);
 
    await start(page,22);await fullPoint(page);
    let full=await saved(page);assert.equal(full.endedAt,undefined);assert.equal(full.measurements.length,2);
@@ -58,7 +58,7 @@ async function fullPoint(page){await button(page,'Zwischenstand').tap();await se
    await button(page,'Trotzdem übernehmen').tap();await settled(page);result=await saved(page);
    assert.equal(result.endSoc,20);assert.equal(result.measurements.at(-1).quality.status,'flagged');
    assert.equal(result.measurements.at(-1).quality.confirmedAt,result.endedAt);
-   const record=page.locator('.session-record').first();await record.locator('summary').tap();await settled(page);
+   await openDataSection(page,'charges');const record=page.locator('.completed-history .session-record').first();await record.locator('summary').tap();await settled(page);
    assert.match(await record.innerText(),/Abschlusswert/);assert.match(await record.innerText(),/Auffällig · bestätigt · für Prognosen gesperrt/);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
    await page.reload();await settled(page);assert.deepEqual(await saved(page),result);assert.deepEqual(errors,[]);

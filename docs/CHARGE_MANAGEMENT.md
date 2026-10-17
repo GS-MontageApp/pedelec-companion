@@ -2,7 +2,7 @@
 
 ## Löschung und Bestandsschutz
 
-Unter Laden → Bisherige Ladevorgänge den ausgewählten Datensatz öffnen und „Ladevorgang löschen“ wählen. Die Bestätigung enthält Start-/Enddatum und Uhrzeit, Fahrrad, Konfiguration, Start-/End-SOC und eindeutige ID. Unbekannte Endwerte bleiben „Nicht erfasst“. Zugeordnete Fahrtage werden mit Hinweis auf Neuberechnung genannt. Abbrechen schreibt nichts.
+Unter Daten → Deine Ladehistorie den ausgewählten Datensatz öffnen und „Ladevorgang löschen“ wählen. Die Bestätigung enthält Start-/Enddatum und Uhrzeit, Fahrrad, Konfiguration, Start-/End-SOC und eindeutige ID. Unbekannte Endwerte bleiben „Nicht erfasst“. Zugeordnete Fahrtage werden mit Hinweis auf Neuberechnung genannt. Abbrechen schreibt nichts.
 
 `deleteSession` entfernt genau die ausgewählte abgeschlossene Sitzung und diese ID aus **allen** Fahrtag-Zuordnungen. Die vorhandene transaktionale Speicherung entfernt ihre Messpunkte mit, ohne verwaiste Zuordnungen zu hinterlassen. Andere Sitzungen, Fahrtage, manuelle SOC-Punkte, Snapshots, Test- und Auffälligkeitsmarkierungen bleiben erhalten. Auch uneindeutige alte Mehrfachzuordnungen werden ausschließlich für diese ausdrücklich gelöschte ID entfernt. Laufende Ladungen müssen zuerst abgeschlossen werden.
 

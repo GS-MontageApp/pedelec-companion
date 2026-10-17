@@ -111,3 +111,5 @@ Prüfungen und Android-Testschritte: [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.
 Ä12/Ä13: [Einzelne Ladungen löschen und Prognose bis 100 %](docs/CHARGE_MANAGEMENT.md).
 
 Ä13a: [Bedienung, Zeitdarstellung und Scrollverhalten](docs/UI_POLISH.md). PWA-Shortcut entfernt, Startpriorität unverändert.
+
+Ä13a.1: [Scrollpositionen und Daten-Akkordeons](docs/DATA_MANAGEMENT.md). Abgeschlossene Ladevorgänge stehen unter **Daten → Deine Ladehistorie**; das Fahrtenbuch ist daneben separat aufklappbar.

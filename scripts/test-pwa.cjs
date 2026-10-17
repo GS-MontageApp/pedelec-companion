@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const {chromium}=require('playwright');
-const {readApp,settled,browserOptions}=require('./browser-data.cjs');
+const {readApp,settled,browserOptions,openDataSection}=require('./browser-data.cjs');
 const url=process.env.TEST_PWA_URL||'http://localhost:4173/pedelec-companion/';
 const btn=(p,name)=>p.getByRole('button',{name,exact:true});
 const gpx='<?xml version="1.0"?><gpx><trk><trkseg><trkpt lat="48" lon="8"><ele>100</ele><time>2026-10-15T10:00:00Z</time></trkpt><trkpt lat="48.001" lon="8"><ele>110</ele><time>2026-10-15T10:01:00Z</time></trkpt></trkseg></trk></gpx>';
@@ -16,19 +16,19 @@ async function digits(p,value){await btn(p,'Eingabe löschen').tap();await settl
   await btn(page,'Ladevorgang starten').tap();await settled(page);await page.getByLabel('Als Test-Ladevorgang kennzeichnen').check();await digits(page,20);await btn(page,'Laden starten').tap();await settled(page);
   assert.equal((await readApp(page)).sessions[0].isTest,true);
   await btn(page,'Beenden').tap();await settled(page);await digits(page,60);await btn(page,'Ladung abschließen').tap();await settled(page);
-  const record=page.locator('.session-record').first();await record.locator('summary').tap();await settled(page);assert.match(await record.innerText(),/TEST · nicht für Prognosen/);
+  await openDataSection(page,'charges');const record=page.locator('.completed-history .session-record').first();await record.locator('summary').tap();await settled(page);assert.match(await record.innerText(),/TEST · nicht für Prognosen/);
   await record.getByRole('checkbox',{name:/Test-Ladevorgang/}).tap();await settled(page);assert.equal((await readApp(page)).sessions[0].isTest,false);
-  await btn(page,'Daten').tap();await settled(page);await btn(page,'Fahrtag hinzufügen').tap();await settled(page);
+  await btn(page,'Daten').tap();await openDataSection(page);await settled(page);await btn(page,'Fahrtag hinzufügen').tap();await settled(page);
   await btn(page,'Start-SOC (%)').tap();await digits(page,80);await btn(page,'Eingabe übernehmen').tap();await btn(page,'End-SOC (%)').tap();await digits(page,30);await btn(page,'Eingabe übernehmen').tap();await page.getByLabel('Notizen',{exact:true}).fill('Camping · Offline-Test');
   await page.locator('input[name=charge]').check();await btn(page,'Fahrtag speichern').tap();await settled(page);
   let state=await readApp(page);assert.equal(state.rideDays.length,1);assert.equal(state.tourLinks.length,0,'Fahrtag ohne Komoot gespeichert');assert.equal(state.rideDays[0].sessionIds.length,1);
-  await page.locator('.diary details').first().locator('summary').tap();await settled(page);assert.match(await page.locator('.diary .ride-balance').first().innerText(),/90[\s\S]*%/);
+  await openDataSection(page);await page.locator('.diary details').first().locator('summary').tap();await settled(page);assert.match(await page.locator('.diary .ride-balance').first().innerText(),/90[\s\S]*%/);
   await btn(page,'Fahrtag bearbeiten / Tour ergänzen').tap();await settled(page);await page.getByLabel('Komoot-Freigabelink (optional)').fill('https://www.komoot.com/tour/3151148876');
   await page.getByLabel('Lokale GPX-Datei (optional)').setInputFiles({name:'test.gpx',mimeType:'application/gpx+xml',buffer:Buffer.from(gpx)});
   await page.getByText('Lokale GPX-Auswertung',{exact:true}).waitFor();await page.locator('.ride-editor').getByText('Optionale Bosch-Tagesangaben',{exact:true}).tap();await settled(page);
   await page.getByLabel('Motoranteil (%)',{exact:true}).fill('60');await page.getByLabel('Fahreranteil (%)',{exact:true}).fill('40');await page.getByLabel('Eco (%)',{exact:true}).fill('100');await btn(page,'Fahrtag speichern').tap();await settled(page);
   state=await readApp(page);assert.equal(state.tourLinks[0].komootId,'3151148876');assert.ok(state.tourLinks[0].gpx.distanceKm>0.1);assert.equal(state.boschStats[0].motorPercent,60);
-  await context.setOffline(true);await page.reload();await settled(page);await btn(page,'Daten').tap();await settled(page);assert.ok((await page.locator('.diary').innerText()).includes(new Date(state.rideDays[0].date+'T12:00').toLocaleDateString('de-DE')));assert.deepEqual(await readApp(page),state);await context.setOffline(false);
+  await context.setOffline(true);await page.reload();await settled(page);await btn(page,'Daten').tap();await openDataSection(page);await settled(page);assert.ok((await page.locator('.diary').innerText()).includes(new Date(state.rideDays[0].date+'T12:00').toLocaleDateString('de-DE')));assert.deepEqual(await readApp(page),state);await context.setOffline(false);
   await btn(page,'Einstellungen').tap();await settled(page);const downloadPromise=page.waitForEvent('download');await btn(page,'JSON-Sicherung exportieren').tap();await settled(page);const download=await downloadPromise;const path=await download.path(),backup=fs.readFileSync(path,'utf8'),parsed=JSON.parse(backup);
   assert.equal(parsed.version,1);assert.equal(parsed.data.rideDays.length,1);assert.equal(parsed.data.tourLinks[0].komootId,'3151148876');
   const bad=JSON.stringify({...parsed,version:99});await page.getByLabel('JSON-Sicherung importieren').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from(bad)});assert.match(await page.getByRole('alert').innerText(),/Version/);assert.deepEqual(await readApp(page),state);
@@ -57,7 +57,7 @@ async function digits(p,value){await btn(p,'Eingabe löschen').tap();await settl
   await btn(page,'Akkustand erfassen').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);await digits(page,53);await btn(page.getByRole('dialog'),'Speichern').tap();await btn(page,'Trotzdem übernehmen').tap();await settled(page);await page.getByRole('dialog').waitFor({state:'hidden'});
   await btn(page,'Fahrtag beenden').tap();await digits(page,47);await btn(page.getByRole('dialog'),'Speichern').tap();await settled(page);await page.getByRole('dialog').waitFor({state:'hidden'});
   await btn(page,'Vorhandenen Fahrtag fortsetzen').tap();await page.getByRole('dialog').getByRole('checkbox').check();await btn(page.getByRole('dialog'),'Ausgewählten Fahrtag fortsetzen').tap();await settled(page);await page.getByRole('dialog').waitFor({state:'hidden'});
-  await btn(page,'Daten').tap();await page.locator('.diary details').first().locator('summary').tap();await btn(page,'Fahrtag bearbeiten / Tour ergänzen').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);await btn(page,'Abbrechen').tap();
+  await btn(page,'Daten').tap();await openDataSection(page);await openDataSection(page);await page.locator('.diary details').first().locator('summary').tap();await btn(page,'Fahrtag bearbeiten / Tour ergänzen').tap();assert.equal(await btn(page,'Gespeichert – jetzt aktualisieren').isDisabled(),true);await btn(page,'Abbrechen').tap();
   state=await readApp(page);
   // A second deployment is discovered on the next online start without an explicit update() call.
   fs.writeFileSync('dist/sw.js',originalSW+'\n// update-regression-B-'+Date.now());
@@ -67,7 +67,7 @@ async function digits(p,value){await btn(p,'Eingabe löschen').tap();await settl
   await page.waitForFunction(()=>document.querySelector('.app')?.getAttribute('aria-busy')==='false');
   await btn(page,'Akkustand erfassen').waitFor();assert.equal((await readApp(page)).revision,revision);assert.deepEqual(await readApp(page),state);
   await context.setOffline(true);await page.reload();await settled(page);assert.equal((await readApp(page)).rideDays.length,2);await context.setOffline(false);
-  fs.mkdirSync('.test-artifacts',{recursive:true});await btn(page,'Daten').tap();await settled(page);await page.locator('.diary details').first().locator('summary').tap();await settled(page);await page.screenshot({path:'.test-artifacts/diary-pwa.png',fullPage:true});
+  fs.mkdirSync('.test-artifacts',{recursive:true});await btn(page,'Daten').tap();await openDataSection(page);await settled(page);await openDataSection(page);await page.locator('.diary details').first().locator('summary').tap();await settled(page);await page.screenshot({path:'.test-artifacts/diary-pwa.png',fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.deepEqual(errors,[]);
   await context.close();
   const broken=await browser.newContext();await broken.addInitScript(()=>{IDBFactory.prototype.open=function(){throw new DOMException('Gesperrt','SecurityError');};});const failed=await broken.newPage();await failed.goto(url);assert.match(await failed.getByRole('alert').innerText(),/Daten konnten nicht/);await broken.close();

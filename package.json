@@ -16,7 +16,8 @@
     "test:ride-management": "node scripts/test-ride-management.cjs",
     "test:soc-journey": "node scripts/test-soc-journey.cjs",
     "test:charge-management": "node scripts/test-charge-management.cjs",
-    "test:ui-polish": "node scripts/test-ui-polish.cjs"
+    "test:ui-polish": "node scripts/test-ui-polish.cjs",
+    "test:data-management": "node scripts/test-data-management.cjs"
   },
   "dependencies": {
     "dexie": "^4.4.6",

@@ -1,4 +1,4 @@
-async function settled(page){await page.waitForFunction(()=>document.querySelector('.app')?.getAttribute('aria-busy')==='false');}
+async function settled(page){await page.waitForFunction(()=>document.querySelector('.app')?.getAttribute('aria-busy')==='false',undefined,{timeout:30000});}
 async function readApp(page){await settled(page);return page.evaluate(async()=>{
  const database=await new Promise((resolve,reject)=>{const request=indexedDB.open('pedelec-companion-v2');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
  try{
@@ -21,3 +21,16 @@ async function writeApp(page,data){await settled(page);return page.evaluate(asyn
 },data);}
 function browserOptions(){const name=process.env.TEST_BROWSER_CHANNEL||'msedge';return name==='chromium'?{headless:true}:{headless:true,channel:name};}
 module.exports={readApp,writeApp,settled,browserOptions};
+
+async function openDataSection(page,section='rides'){
+ await settled(page);
+ if(!await page.locator('.diary').count()){
+  const nav=page.getByRole('navigation').getByRole('button',{name:'Daten',exact:true});
+  if(await nav.count())await nav.tap();
+  else {await page.getByRole('button',{name:'Einstellungen',exact:true}).tap();await page.getByRole('button',{name:'Daten öffnen · Fahrtenbuch und GPX',exact:true}).tap();}
+ }
+ const heading=page.getByRole('button',{name:section==='rides'?'Dein Fahrtenbuch':'Deine Ladehistorie',exact:true});
+ if(await heading.getAttribute('aria-expanded')!=='true')await heading.tap();
+ await page.locator(section==='rides'?'#ride-records':'#charge-records').waitFor({state:'visible'});
+}
+module.exports.openDataSection=openDataSection;

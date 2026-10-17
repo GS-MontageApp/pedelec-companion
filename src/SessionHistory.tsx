@@ -1,3 +1,4 @@
+import {AccordionHeading,singleRecordToggle} from './Accordion';
 import {BatteryCharging,ChevronRight,Clock} from 'lucide-react';
 import {useEffect,useState} from 'react';
 import type {Session,RideDay} from './domain';
@@ -10,20 +11,20 @@ const date=(n:number)=>new Date(n).toLocaleDateString('de-DE');
 const time=(n:number)=>new Date(n).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
 const exactTime=(n:number)=>new Date(n).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 
-export default function SessionHistory({sessions,rideDays,storageOk,onTestChange,onDelete,onEditingChange}:{sessions:Session[];rideDays:RideDay[];storageOk:boolean;onTestChange:(id:string,isTest:boolean)=>Promise<void>;onDelete:(id:string)=>Promise<boolean>;onEditingChange:(editing:boolean)=>void}) {
+export default function SessionHistory({sessions,rideDays,storageOk,onTestChange,onDelete,onEditingChange,expanded,onExpandedChange}:{sessions:Session[];rideDays:RideDay[];storageOk:boolean;onTestChange:(id:string,isTest:boolean)=>Promise<void>;onDelete:(id:string)=>Promise<boolean>;onEditingChange:(editing:boolean)=>void;expanded:boolean;onExpandedChange:(expanded:boolean)=>void}) {
   const [removing,setRemoving]=useState<string|null>(null),[error,setError]=useState('');
   const selected=sessions.find(s=>s.id===removing),linked=rideDays.filter(d=>d.sessionIds.includes(removing??''));
   useEffect(()=>{onEditingChange(!!removing);return()=>onEditingChange(false);},[removing,onEditingChange]);
   const completed=completedSessions(sessions);
   return <section className="history card completed-history" id="ladehistorie" aria-labelledby="history-title">
-    <div className="section-title"><h2 id="history-title">Bisherige Ladevorgänge</h2><span className="count">{completed.length}</span></div>
+    <AccordionHeading id="history-title" title="Deine Ladehistorie" count={completed.length} expanded={expanded} onToggle={()=>onExpandedChange(!expanded)} controls="charge-records"/><div id="charge-records" hidden={!expanded}>
     <p className="subtitle">Deine abgeschlossenen Ladepausen. Neueste zuerst.</p>
     <p className="history-storage">{storageOk?'In diesem Browser gespeichert · nach Neuladen verfügbar':'Aktueller Stand nur in dieser geöffneten App · Speichern fehlgeschlagen'}</p>
     {!completed.length&&<div className="empty"><Clock size={23}/><p>Noch kein abgeschlossener Ladevorgang.<br/><small>Nach „Beenden“ findest du deine Sitzung hier.</small></p></div>}
     {completed.map(session=>{
       const {points,start,end}=sessionSummary(session);
       const {bike,configuration,batteries,charger}=session.snapshot;
-      return <details className="session-record" key={session.id} data-session-id={session.id}>
+      return <details className="session-record" name="charge-records" onToggle={singleRecordToggle} key={session.id} data-session-id={session.id}>
         <summary>
           <div className="session-heading"><span><strong>{date(session.startedAt)}</strong>{session.isTest&&<span className="badge test-badge">TEST · nicht für Prognosen</span>}<small>{time(session.startedAt)} – {time(session.endedAt!)} Uhr{date(session.startedAt)!==date(session.endedAt!)?` · Ende ${date(session.endedAt!)}`:''}</small></span><ChevronRight size={20}/></div>
           <div className="session-stats"><span><small>Dauer</small><b>{elapsed(session.startedAt,session.endedAt!)}</b></span><span><small>Start-SOC</small><b>{start?`${start.soc} %`:'Nicht erfasst'}</b></span><span><small>End-SOC</small><b>{session.endSoc!=null?`${session.endSoc} %`:'Nicht erfasst'}</b></span></div>
@@ -44,7 +45,7 @@ export default function SessionHistory({sessions,rideDays,storageOk,onTestChange
         </div>
       </details>;
     })}
-    {selected&&<ConfirmDialog title="Ladevorgang löschen?" confirmLabel="Ladevorgang endgültig löschen" onClose={()=>setRemoving(null)} onConfirm={async()=>{try{if(await onDelete(selected.id))setRemoving(null);else setError('Löschung konnte nicht gespeichert werden. Bitte erneut versuchen.');}catch(cause){setError(cause instanceof Error?cause.message:'Löschen nicht möglich.');}}}>
+    </div>{selected&&<ConfirmDialog title="Ladevorgang löschen?" confirmLabel="Ladevorgang endgültig löschen" onClose={()=>setRemoving(null)} onConfirm={async()=>{try{if(await onDelete(selected.id))setRemoving(null);else setError('Löschung konnte nicht gespeichert werden. Bitte erneut versuchen.');}catch(cause){setError(cause instanceof Error?cause.message:'Löschen nicht möglich.');}}}>
       <p className="subtitle">{date(selected.startedAt)} · {time(selected.startedAt)} – {time(selected.endedAt!)} Uhr{date(selected.startedAt)!==date(selected.endedAt!)?` · Ende ${date(selected.endedAt!)}`:''}</p>
       <p className="subtitle">{selected.snapshot.bike.manufacturer} · {selected.snapshot.bike.name}<br/>{selected.snapshot.configuration.id} · {selected.snapshot.batteries.map(b=>`${b.nominalWh} Wh`).join(' + ')}<br/>Start-SOC: {sessionSummary(selected).start?`${sessionSummary(selected).start!.soc} %`:'Nicht erfasst'} · End-SOC: {selected.endSoc==null?'Nicht erfasst':`${selected.endSoc} %`}</p>
       <p className="history-footnote">ID: {selected.id}</p>

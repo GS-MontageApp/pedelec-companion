@@ -1,9 +1,9 @@
-const {readApp,writeApp,settled,browserOptions}=require('./browser-data.cjs');
+const {readApp,writeApp,settled,browserOptions,openDataSection}=require('./browser-data.cjs');
 const assert = require('node:assert/strict');
 const {mkdirSync} = require('node:fs');
 const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const url = process.env.TEST_BASE_URL;
-if (!url) throw new Error('TEST_BASE_URL muss auf die HTTP-LAN-Adresse zeigen (z. B. http://192.168.178.31:5173/).');
+if (!url) throw new Error('TEST_BASE_URL muss auf die HTTP-LAN-Adresse zeigen (z. B. http://<PC-Adresse>:5173/).');
 const storageKey = 'pedelec-v1';
 
 async function inputSoc(page, value) {
@@ -100,7 +100,7 @@ async function assertLayout(page) {
       const completed=await savedSession(page);
       await page.reload();await settled(page);
       assert.deepEqual(await savedSession(page),completed,'Abgeschlossene Sitzung bleibt unverändert nach Reload');
-      const history=page.getByRole('region',{name:'Bisherige Ladevorgänge'});
+      await openDataSection(page,'charges');const history=page.getByRole('region',{name:'Deine Ladehistorie'});
       const record=history.locator('details').first();
       assert.match(await record.locator('summary').innerText(),/Start-SOC.*12 %.*End-SOC.*30 %/s);
       await record.locator('summary').tap();await settled(page);
@@ -112,7 +112,7 @@ async function assertLayout(page) {
       await page.getByRole('button',{name:'Einstellungen',exact:true}).tap();await settled(page);
       await page.getByRole('button',{name:/Mein zweites Pedelec/}).tap();await settled(page);
       await page.getByRole('button',{name:'Laden',exact:true}).tap();await settled(page);
-      assert.match(await history.locator('summary').innerText(),/Riese & Müller/);
+      await openDataSection(page,'charges');assert.match(await history.locator('summary').innerText(),/Riese & Müller/);
       // Existing legacy data, arbitrary snapshots and unsorted storage must survive reading.
       const seeded=await readApp(page),olderSeed=structuredClone(seeded.sessions[0]);
       delete olderSeed.endSoc;delete olderSeed.endMeasurementId;olderSeed.id='legacy-history';olderSeed.startedAt-=86400000;olderSeed.endedAt-=86400000;
@@ -121,7 +121,7 @@ async function assertLayout(page) {
       seeded.sessions.unshift(olderSeed);await writeApp(page,seeded);const storedBeforeReload=await readApp(page);
       await page.reload();await settled(page);
       assert.deepEqual(await readApp(page),storedBeforeReload);
-      assert.equal(await history.locator('details').count(),2);
+      await openDataSection(page,'charges');assert.equal(await history.locator('details').count(),2);
       assert.equal(await history.locator('details').first().getAttribute('data-session-id'),completed.id);
       const older=history.locator('details').nth(1);await older.locator('summary').tap();await settled(page);
       assert.match(await older.innerText(),/Historisches Testfahrrad/);
