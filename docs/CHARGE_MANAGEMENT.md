@@ -16,7 +16,7 @@ Jede Sitzung besitzt Startzeit, tatsächliche Messzeiten und eingefrorene Fahrra
 
 ## Modell `charge-estimate-v1` (`src/forecast.ts`)
 
-Reine Ableitung ohne Schreibzugriff. Anker ist der zeitlich letzte **tatsächliche** gültige SOC-Messpunkt; unmittelbar nach Start also Start-SOC/Startzeit. Restzeit und Endzeit hängen von diesem Anker ab. Ein weiterer gemessener Wert setzt den Anker neu. Die Uhr läuft bis zur geschätzten Endzeit herunter, ohne SOC zu interpolieren oder Messpunkte zu erzeugen. Anzeige auf fünf Minuten aufgerundet; Endzeit ist ebenfalls eine Schätzung.
+Reine Ableitung ohne Schreibzugriff. Anker ist der zeitlich letzte **tatsächliche** gültige SOC-Messpunkt; unmittelbar nach Start also Start-SOC/Startzeit. Restzeit und Endzeit hängen von diesem Anker ab. Ein weiterer gemessener Wert setzt den Anker neu. Die Uhr läuft bis zur geschätzten Endzeit herunter, ohne SOC zu interpolieren oder Messpunkte zu erzeugen. Seit Ä13a Anzeige auf ganze Minuten aufgerundet; Endzeit ist ebenfalls eine Schätzung.
 
 Eigene generische Zeitgewichtung, **keine Herstellerkennlinie**:
 
@@ -34,7 +34,7 @@ Technischer Rückfall nur für das bestehende ausdrücklich bezeichnete Bosch Ny
 
 SOH ist dabei nur ein manueller Kapazitätsansatz, kein Messwert der nutzbaren Energie. Die Gesamtpaketkapazität wird einmal berücksichtigt. Keine Behauptung gleichzeitigen oder sequenziellen Ladens und kein fiktiver Faktor zwei für zwei Akkus. Das aggregierte Modell bildet die reale DualBattery-Steuerung nicht nach. Temperatur, Ausgleichsladung, Verluste, Ladepausen und reale Strombegrenzungen bleiben unbekannt. Deshalb nur eine **grobe Orientierung**, keine verlässliche Ankunftszeit oder Herstellerzusage. Unbekannte Systeme erhalten ohne passende Historie keine angenommene Spannung und keine Zahl.
 
-Mit den initialen, ausdrücklich beispielhaften 2 × 500 Wh (einmal SOH 94 %) ergibt der Kapazitätsansatz 970 Wh. Start 40 %: rund 10 h 27 min bei 2 A beziehungsweise 3 h 29 min bei 6 A (Anzeige auf fünf Minuten aufgerundet). Dies illustriert die Formel anhand konfigurierter Werte und ersetzt keine praktische Validierung am Fahrrad.
+Mit den initialen, ausdrücklich beispielhaften 2 × 500 Wh (einmal SOH 94 %) ergibt der Kapazitätsansatz 970 Wh. Start 40 %: rund 10 h 27 min bei 2 A beziehungsweise 3 h 29 min bei 6 A (Seit Ä13a Anzeige auf ganze Minuten aufgerundet). Dies illustriert die Formel anhand konfigurierter Werte und ersetzt keine praktische Validierung am Fahrrad.
 
 ## Historische Kalibrierung
 
@@ -60,3 +60,5 @@ Nach Überschreiten der Schätzung: „Überfällig“ und Aufforderung, den tat
 Prüfungen: `pnpm test`, `pnpm run typecheck`, `pnpm run build`, `pnpm run test:charge-management` und bestehende Lade-, Ä08/Ä10/Ä11-, Langlisten- und Offline/PWA-Tests. Browsergrößen 320×568, 390, 412 und 1280 Pixel sind Simulationen, kein echter Android-Gerätetest.
 
 Lokaler Prüfstand: 71 Fach-/Speichertests bestanden, TypeScript und Produktionsbuild erfolgreich. Sämtliche mobilen Lade-, Ä08/Ä10/Ä11-, Langlisten-, Offline-/Backup-/PWA-Updateprüfungen bestanden. Neue Ä12/Ä13-Browserfälle bei 320/390/412/1280 Pixeln bestanden; Prognose- und Löschdialogdarstellung visuell kontrolliert. Kein echter Android-Gerätetest durch Codex.
+
+Ä13a ergänzt Stunden-/Minutenformat, getrenntes Datum, geänderte Kachelreihenfolge und gezieltes Scrollen. Formel und Datenbasis bleiben unverändert. Siehe `UI_POLISH.md`.

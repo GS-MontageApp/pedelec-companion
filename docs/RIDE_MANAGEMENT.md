@@ -8,7 +8,7 @@ Standardmäßig bleiben alle eigenständigen Ladevorgänge, ihre Messungen, Qual
 
 ## Fortsetzen
 
-Unter **Reisen** das gewünschte Fahrrad auswählen. Gibt es für dieses Fahrrad heute bereits einen gespeicherten Fahrtag, erscheint **Vorhandenen Fahrtag fortsetzen** anstelle eines zweiten Starts. Auch ein Fahrradwechsel im Startdialog bietet bei einem bestehenden Eintrag den Fortsetzen-Weg an. Der direkte PWA-Shortcut bietet bei vorhandenem heutigen Fahrtag ebenfalls diesen Weg an.
+Unter **Reisen** das gewünschte Fahrrad auswählen. Gibt es für dieses Fahrrad heute bereits einen gespeicherten Fahrtag, erscheint **Vorhandenen Fahrtag fortsetzen** anstelle eines zweiten Starts. Auch ein Fahrradwechsel im Startdialog bietet bei einem bestehenden Eintrag den Fortsetzen-Weg an. Seit Ä13a erfolgt der Zugang ausschließlich über die normale App; der PWA-Shortcut wurde entfernt.
 
 Bei mehreren Einträgen erfolgt keine Vorauswahl. Die Auswahl zeigt Datum, Fahrrad, Start-/End-SOC, Notiz, Testkennzeichnung und die vollständige ID. Vor dem Fortsetzen muss der Nutzer ausdrücklich bestätigen, dass der bisherige Abschluss aufbewahrt und der ausgewählte Tag wieder aktiviert wird. **Abbrechen** verändert keine Daten. Es bleibt bei höchstens einem aktiven Fahrtag.
 

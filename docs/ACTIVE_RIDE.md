@@ -14,9 +14,7 @@ Ein aktiver Fahrtag gilt appweit; ein Ladevorgang darf gleichzeitig laufen. Ein 
 
 Beim Laden der App und nach einem Übergang von verborgen zu sichtbar gilt: aktive Ladung → Laden; sonst aktiver Fahrtag → Reisen; sonst letzter manuell verwendeter Reiter. Der letzte Reiter ist eine lokale Komforteinstellung (`pedelec-last-tab`), kein Teil der Fachdaten. Gesperrter Zugriff auf localStorage verhindert weder Navigation noch IndexedDB-Speicherung. Offene Eingaben unterbrechen die automatische Reiterauswahl. Normale Zustandsänderungen und Timer-Ticks lösen keinen Reiterwechsel aus.
 
-Der explizite Shortcut `?action=ride-soc` hat Vorrang und öffnet die SOC-Eingabe, beziehungsweise den Startdialog ohne aktiven Fahrtag. Der Parameter wird danach entfernt. Das Manifest enthält **Akkustand erfassen**. Android: langer Druck auf das installierte App-Symbol. Die Anzeige hängt von Launcher/Browser und der Übernahme des aktualisierten Manifests ab; die App-Eingabe funktioniert unabhängig davon. Keine Neuinstallation oder Löschung der Websitedaten nötig.
-
-Quellen: [PWA-Shortcuts](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/How_to/Expose_common_actions_as_shortcuts), [Dexie: zusätzliche Objekteigenschaften](https://dexie.org/docs/Tutorial/Design).
+Seit Ä13a ist der Android-PWA-Shortcut entfernt, einschließlich seiner URL-Sonderbehandlung. Auch ein alter Startlink öffnet keinen Eingabedialog mehr. Die normale Priorität bleibt: aktive Ladung, sonst aktiver Fahrtag, sonst letzter Reiter. Die reguläre Schaltfläche **Akkustand erfassen** in der App bleibt unverändert erreichbar. Launcher können alte Shortcut-Einträge vorübergehend zwischenspeichern; keine Neuinstallation und keine Löschung der Websitedaten nötig.
 
 ## Daten und Bestandsschutz
 
@@ -30,7 +28,7 @@ Die Tagesbilanz verwendet ausschließlich **Start-SOC + gültig zugeordnete Zwis
 
 - `pnpm test`: Fach-/Speicher-/Backup-/Bestandsschutztests einschließlich Ä08.
 - `pnpm run typecheck` und `pnpm run build`.
-- `pnpm run test:active-ride`: 320/390/412 Pixel Touch sowie 1280 Pixel Desktop, Start/Ende, Messungen, Korrektur/Löschen, Offline-Neustart, parallele Ladung, automatische Auswahl beim Wiederaufnehmen, manueller Reiterwechsel ohne Unterbrechung, Shortcut-URL und Manifest, Bilanz, Inline-Editor und Backup.
+- `pnpm run test:active-ride`: 320/390/412 Pixel Touch sowie 1280 Pixel Desktop, Start/Ende, Messungen, Korrektur/Löschen, Offline-Neustart, parallele Ladung, automatische Auswahl beim Wiederaufnehmen, manueller Reiterwechsel ohne Unterbrechung, entfernter Shortcut und reguläre Startpriorität, Bilanz, Inline-Editor und Backup.
 - `pnpm run test:phase1`: bestehender Inline-Editor mit 42 Fahrtagen und Duplikaten.
 - `pnpm run test:browser`: vollständige Ladebedienung und Historie.
 - `pnpm run test:pwa`: tatsächlicher Workerwechsel, keine Reloads während offener Eingaben, Erhalt aktiver Fahrtage und Messpunkte beim Update, erneuter Offline-Start.

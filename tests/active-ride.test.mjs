@@ -29,8 +29,8 @@ test('charging coexists with active day and balance counts charged SOC only once
  charge=finishSession(charge,at+3000,{kind:'reading',point:createMeasurement('60',at+3000,at+3000),confirmed:false});s={...s,sessions:[charge]};s=captureRideSoc(s,d.id,'60','',at+4000);assert.equal(dayBalance(activeRide(s),s).complete,false);
  s=endRide(s,d.id,'50',at+5000);d=s.rideDays[0];s=saveRideDay(s,{...d,sessionIds:[charge.id]});assert.equal(dayBalance(s.rideDays[0],s).consumed,70);assert.equal(dayBalance(s.rideDays[0],s).charged,20);
 });
-test('opening tab priority and explicit shortcut; hidden optional Data tab never restored',()=>{
- const empty=initialState();assert.equal(openingTab(empty,'Einstellungen'),'Einstellungen');assert.equal(openingTab({...empty,showDataNav:false},'Daten'),'Laden');assert.equal(openingTab(start(),'Daten'),'Reisen');assert.equal(openingTab(start(),'Laden',true),'Reisen');assert.equal(openingTab(empty,null),'Laden');
+test('opening tab priority; hidden optional Data tab never restored',()=>{
+ const empty=initialState();assert.equal(openingTab(empty,'Einstellungen'),'Einstellungen');assert.equal(openingTab({...empty,showDataNav:false},'Daten'),'Laden');assert.equal(openingTab(start(),'Daten'),'Reisen');assert.equal(openingTab(empty,null),'Laden');
 });
 test('legacy duplicates, links, active measurements and test flags survive IndexedDB reopening and backup',async()=>{
  const db=new CompanionDB('a08-'+crypto.randomUUID());try{

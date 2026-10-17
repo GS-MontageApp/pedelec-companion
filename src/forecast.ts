@@ -38,5 +38,5 @@ export function chargeForecast(session:Session|undefined,history:Session[],now:n
  }
  const endAt=last.measuredAt+(weightedSoc(100)-weightedSoc(last.soc))*msPerUnit;
  if(!Number.isFinite(endAt))return none('Noch keine Schätzung möglich: technische Daten prüfen.');
- return {targetSoc:100,endAt,remainingMinutes:Math.max(0,Math.ceil((endAt-now)/300000)*5),overdue:now>=endAt,source,historyCount:count,explanation};
+ return {targetSoc:100,endAt,remainingMinutes:Math.max(0,Math.ceil((endAt-now)/60000)),overdue:now>=endAt,source,historyCount:count,explanation};
 }

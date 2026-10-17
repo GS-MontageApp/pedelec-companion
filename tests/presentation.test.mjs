@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {formatRemainingMinutes} from '../src/presentation.ts';
+import {chargeForecast} from '../src/forecast.ts';
+import {initialState} from '../src/persistence.ts';
+import {createSession,createMeasurement,insertMeasurement} from '../src/charging.ts';
+import {openingTab,startRide} from '../src/rideLifecycle.ts';
+test('Ä13a duration formats minutes and hours without changing values',()=>{for(const [n,text] of [[0,'0 Min.'],[15,'15 Min.'],[60,'1 Std.'],[75,'1 Std. 15 Min.'],[110,'1 Std. 50 Min.'],[125,'2 Std. 5 Min.'],[1445,'24 Std. 5 Min.']])assert.equal(formatRemainingMinutes(n),text);});
+test('Ä13a one-minute countdown retains absolute forecast; new measurement moves actual anchor',()=>{const state=initialState(),c=state.catalog,at=Date.now(),s=createSession({bike:c.bikes[0],configuration:c.configurations[0],batteries:c.batteries.slice(0,2),charger:c.chargers[0]},'40',at),before=structuredClone(s),f=chargeForecast(s,[],at),g=chargeForecast(s,[],at+60000);assert.equal(f.remainingMinutes-g.remainingMinutes,1);assert.equal(g.endAt,f.endAt);assert.equal(f.remainingMinutes,Math.ceil((f.endAt-at)/60000));assert.deepEqual(s,before);s.measurements=insertMeasurement(s.measurements,createMeasurement('80',at+3600000,at+3600000),false);const next=chargeForecast(s,[],at+3600000);assert.notEqual(next.endAt,f.endAt);assert.equal(s.measurements.length,2);assert.equal(s.measurements[1].soc,80);});
+test('Ä13a ordinary start priority survives shortcut removal',()=>{const s=initialState();assert.equal(openingTab(s,null),'Laden');assert.equal(openingTab(s,'Einstellungen'),'Einstellungen');const ride=startRide(s,'rm','100',Date.now(),true);assert.equal(openingTab(ride,'Daten'),'Reisen');const c=s.catalog,charge=createSession({bike:c.bikes[0],configuration:c.configurations[0],batteries:c.batteries.slice(0,2),charger:c.chargers[0]},'40',Date.now());assert.equal(openingTab({...ride,sessions:[charge]},'Reisen'),'Laden');});

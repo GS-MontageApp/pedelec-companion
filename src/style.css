@@ -21,3 +21,18 @@
 .forecast-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.forecast-values strong{overflow-wrap:anywhere}.forecast .section-title{flex-wrap:wrap}.session-details>.secondary{margin-bottom:14px}.session-details .history-footnote{overflow-wrap:anywhere}
 
 .forecast-basis{font-size:12px;color:#67745b;margin:12px 0}.forecast-basis summary{min-height:44px;display:flex;align-items:center;text-decoration:underline;cursor:pointer}.forecast-values strong span{display:block;margin-top:4px}
+/* Ä13a: three deliberate proximity targets in the document scroll container. */
+html{scroll-snap-type:y proximity;scroll-padding-block:16px calc(100px + env(safe-area-inset-bottom))}
+.snap-target{scroll-snap-align:start;scroll-snap-stop:normal;scroll-margin-block:16px}
+.forecast{scroll-margin-top:20px;align-self:start}
+.charging-active{grid-template-columns:minmax(0,1fr)}
+.charge-equipment{margin-top:22px}
+.charge-actions{flex-wrap:nowrap;align-items:stretch;gap:8px}
+.charge-actions>button{flex:1 1 auto;min-width:0;min-height:52px;padding:12px 10px;white-space:nowrap;font-size:13px;justify-content:center}
+.charge-actions>.primary{flex-grow:2}.charge-actions svg{flex-shrink:0}
+.forecast-values strong{overflow-wrap:normal;font-size:clamp(20px,5.5vw,23px)}
+.forecast-values strong .forecast-clock{display:block;font-size:inherit;font-weight:600;white-space:nowrap;margin-top:0}
+.forecast-values strong .forecast-date{display:block;font-size:12px;font-weight:400;margin-top:5px;white-space:nowrap;letter-spacing:normal}
+.balance-number{display:flex;align-items:baseline;gap:.18em;white-space:nowrap;font-size:clamp(28px,8vw,36px)}
+.balance-number span{display:inline;font-size:.55em;font-weight:500;margin:0}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
