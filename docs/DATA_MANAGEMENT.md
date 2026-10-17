@@ -41,3 +41,5 @@ Android-Praxis nach dem Update:
 Browsergrößen 320/390/412/1280 Pixel sind Simulationen. Die reale Fingerbewegung und native Einrastphysik auf Android müssen zusätzlich praktisch geprüft werden; kein echter Android-Gerätetest durch Codex.
 
 Abschließender lokaler Prüfstand: 74 Fach-/Speichertests, TypeScript und Produktionsbuild erfolgreich. Neue Prüfung mit 100 Fahrtagen und 100 Ladungen bei 320/390/412/1280 Pixeln bestanden. Bestehende Lade-, Fahrtag-, Zuordnungs-, Lösch-, Langlisten-, Scroll-, Offline-/Backup-/Updateprüfungen bestanden. Karten und Akkordeons visuell kontrolliert. Vorherige Scroll- und Renderprobleme behoben und die betroffenen Prüfungen vollständig wiederholt. Kein echter Android-Gerätetest durch Codex.
+
+CI-Nachprüfung: Der alte 125-%-Layouttest erzeugte Fahrt- und Ladeende mit separaten Uhrzeitabfragen. Ein späterer Lade-Endzeitpunkt führte korrekt zum Ausschluss aus der Tagesbilanz. Der Test verwendet jetzt einen gemeinsamen Abschlusszeitpunkt; keine Änderung an App oder Berechnungen. Die vorherige informative CI-Prüfung war deshalb fehlgeschlagen und wurde nach der Fixture-Korrektur wiederholt.
